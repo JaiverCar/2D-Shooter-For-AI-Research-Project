@@ -116,11 +116,13 @@ public class PCG : MonoBehaviour
         SpawnTile(0, 0);
         Spawn("player", 0.0f, 0.0f);
 
-        //Create a square room
-        //Note that already placed tiles will not be over-written
-        for (int x = -10; x <= 10; x++)
-            for (int y = -10; y <= 10; y++)
-                  SpawnTile(x, y);
+        //Add some test enemies
+        Spawn("enemy", 7.0f, 7.0f);
+        //Spawn("fast", 0.0f, 4.5f);
+        //Spawn("tank", 4.5f, 0.0f);
+        //Spawn("ultra", -4.5f, 4.5f);
+        //Spawn("spread", -4.5f, -4.5f);
+        //Spawn("boss", 0.0f, -4.5f);
 
         //Put a bunch of pick-ups around the player
         Spawn("heart", 2.0f, 2.0f);
@@ -140,13 +142,11 @@ public class PCG : MonoBehaviour
         Spawn("speedboost", -4.0f, 2.0f);
         Spawn("shotboost", -4.0f, 4.0f);
 
-        //Add some test enemies
-        Spawn("enemy", 7.0f, 7.0f);
-        //Spawn("fast", 0.0f, 4.5f);
-        //Spawn("tank", 4.5f, 0.0f);
-        //Spawn("ultra", -4.5f, 4.5f);
-        //Spawn("spread", -4.5f, -4.5f);
-        //Spawn("boss", 0.0f, -4.5f);
+        //Create a square room
+        //Note that already placed tiles will not be over-written
+        for (int x = -10; x <= 10; x++)
+            for (int y = -10; y <= 10; y++)
+                SpawnTile(x, y);
 
         //Don't forget the exit...
         Spawn("portal", 8.0f, -8.0f);
