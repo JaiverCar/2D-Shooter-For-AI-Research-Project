@@ -9,9 +9,9 @@ public unsafe class AStar : MonoBehaviour
 
     private int currentIteration = 0;
 
-    public unsafe struct Node
+    public class Node
     {
-        //IntPtr parent;       // Parent
+        Node parent;       // Parent
         Node[] neighbors; // An array of the nodes neighbors, 0 = N, 1 = NE, 2 = E, 3 = SE, 4 = S, 5 = SW, 6 = W, 7 = NW    
         Vector2 gridPos;    // Node's location
         float finalCost;    // Final cost f(x)
@@ -22,7 +22,7 @@ public unsafe class AStar : MonoBehaviour
         public Node(Node[] neighbors, Vector2 gridPos, float finalCost, float givenCost, ListType onList, int iteration)
         {
             this.neighbors = neighbors;
-            //parent = null;
+            parent = null;
             this.gridPos = gridPos;
             this.finalCost = finalCost;
             this.givenCost = givenCost;
