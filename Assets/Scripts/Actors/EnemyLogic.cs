@@ -102,7 +102,7 @@ public class EnemyLogic : MonoBehaviour
 		MoveHorizontalTimer -= Time.deltaTime;
 
         //Should we wander in a random direction?
-        WanderingUpdate();
+        //WanderingUpdate(); // disabled wander until we have A* implemented ----------------- 
 
         //No reference to an active player, nothing to chase
         if (Player == null || !Player.gameObject.activeInHierarchy)
@@ -114,27 +114,31 @@ public class EnemyLogic : MonoBehaviour
 
         //////// work zone bellow, hard hats remaining: 1
 
-        //If player is within aggro range, chase it!
-        var playerDir = (Player.position - transform.position);
-        if (playerDir.magnitude <= AggroRange)
-		{
-			if (Aggroed == false)
-			{
-				Wander = false;
-				Timer = 0;
-			}
-            SetAggroState(true);
-        }
-        else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
-            SetAggroState(false);
+        //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
+        
+  //      //If player is within aggro range, chase it!
+  //      var playerDir = (Player.position - transform.position);
+  //      if (playerDir.magnitude <= AggroRange)
+		//{
+		//	if (Aggroed == false)
+		//	{
+		//		Wander = false;
+		//		Timer = 0;
+		//	}
+  //          SetAggroState(true);
+  //      }
+  //      else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
+  //          SetAggroState(false);
 
-        //Rotate to face the player (unless we are wandering)
-        if (Aggroed == true && Wander == false)
-        {
-            transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
-                                         // ^ replace by the direction of the tile they are moving twoards 
-        }
-        //Note that we account for whether the enemy is up against a wall so we don't get stuck
+  //      //Rotate to face the player (unless we are wandering)
+  //      if (Aggroed == true && Wander == false)
+  //      {
+  //          transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+  //                                       // ^ replace by the direction of the tile they are moving twoards 
+  //      }
+  //      //Note that we account for whether the enemy is up against a wall so we don't get stuck
+        
+        //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
 
         // This is how it moves:
         // Everything before just changes it's rotation
