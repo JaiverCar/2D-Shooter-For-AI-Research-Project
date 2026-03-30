@@ -14,7 +14,7 @@ public class PCG : MonoBehaviour
     //Maximum height and width of tile map (must be odd, somewhere between 21 and 101 works well)
     private int MaxMapSize = 41;
     //Size of floor and wall tiles in Unity units (somewhere between 1.0f and 10.0f works well)
-    private float GridSize = 5.0f;
+    private float GridSize = 1.0f;
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -118,30 +118,30 @@ public class PCG : MonoBehaviour
 
         //Create a square room
         //Note that already placed tiles will not be over-written
-        for (int x = -5; x <= 5; x++)
-            for (int y = -5; y <= 5; y++)
-                SpawnTile(x, y);
+        for (int x = -10; x <= 10; x++)
+            for (int y = -10; y <= 10; y++)
+                  SpawnTile(x, y);
 
         //Put a bunch of pick-ups around the player
-        Spawn("heart", 0.5f, 0.5f);
-        Spawn("healthboost", 0.0f, 0.5f);
-        Spawn("speedboost", 0.5f, 0.0f);
-        Spawn("shotboost", 0.5f, -0.5f);
-        Spawn("heart", -0.5f, -0.5f);
-        Spawn("healthboost", 0.0f, -0.5f);
-        Spawn("speedboost", -0.5f, 0.0f);
-        Spawn("shotboost", -0.5f, 0.5f);
-        Spawn("heart", 1.5f, 1.5f);
-        Spawn("healthboost", 1.0f, 1.5f);
-        Spawn("speedboost", 1.5f, 1.0f);
-        Spawn("shotboost", 1.5f, -1.5f);
-        Spawn("heart", -1.5f, -1.5f);
-        Spawn("healthboost", 1.0f, -1.5f);
-        Spawn("speedboost", -1.5f, 1.0f);
-        Spawn("shotboost", -1.5f, 1.5f);
+        Spawn("heart", 2.0f, 2.0f);
+        Spawn("healthboost", 0.0f, 2.0f);
+        Spawn("speedboost", 2.0f, 0.0f);
+        Spawn("shotboost", 2.0f, -2.0f);
+        Spawn("heart", -2.0f, -2.0f);
+        Spawn("healthboost", 0.0f, -2.0f);
+        Spawn("speedboost", -2.0f, 0.0f);
+        Spawn("shotboost", -2.0f, 2.0f);
+        Spawn("heart", 4.0f, 4.0f);
+        Spawn("healthboost", 2.0f, 4.0f);
+        Spawn("speedboost", 4.0f, 2.0f);
+        Spawn("shotboost", 4.0f, -4.0f);
+        Spawn("heart", -4.0f, -4.0f);
+        Spawn("healthboost", 2.0f, -4.0f);
+        Spawn("speedboost", -4.0f, 2.0f);
+        Spawn("shotboost", -4.0f, 4.0f);
 
         //Add some test enemies
-        Spawn("enemy", 4.5f, 4.5f);
+        Spawn("enemy", 7.0f, 7.0f);
         //Spawn("fast", 0.0f, 4.5f);
         //Spawn("tank", 4.5f, 0.0f);
         //Spawn("ultra", -4.5f, 4.5f);
@@ -149,7 +149,7 @@ public class PCG : MonoBehaviour
         //Spawn("boss", 0.0f, -4.5f);
 
         //Don't forget the exit...
-        Spawn("portal", 5.0f, -5.0f);
+        Spawn("portal", 8.0f, -8.0f);
 
         //Fill all empty tiles with walls
         FillWithWalls();
@@ -275,9 +275,9 @@ public class PCG : MonoBehaviour
         Prefabs.Add("wall", Resources.Load<GameObject>("Prefabs/Tiles/Wall"));
         Prefabs["wall"].transform.localScale = new Vector3(GridSize, GridSize, 1.0f); //Scale the wall properly
         Prefabs.Add("silverdoor", Resources.Load<GameObject>("Prefabs/Tiles/SilverDoor"));
-        Prefabs["silverdoor"].transform.localScale = new Vector3(GridSize / 2.0f, 1.0f, 1.0f); //Scale the door properly
+        Prefabs["silverdoor"].transform.localScale = new Vector3(GridSize, 1.0f, 1.0f); //Scale the door properly
         Prefabs.Add("golddoor", Resources.Load<GameObject>("Prefabs/Tiles/GoldDoor"));
-        Prefabs["golddoor"].transform.localScale = new Vector3(GridSize / 2.0f, 1.0f, 1.0f); //Scale the door properly
+        Prefabs["golddoor"].transform.localScale = new Vector3(GridSize, 1.0f, 1.0f); //Scale the door properly
         Prefabs.Add("portal", Resources.Load<GameObject>("Prefabs/Tiles/Portal"));
 
         //Load the player prefab

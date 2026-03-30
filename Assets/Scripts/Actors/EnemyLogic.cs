@@ -20,6 +20,8 @@ public class EnemyLogic : MonoBehaviour
     // DESIGNER ADJUSTABLE VALUES
     //////////////////////////////////////////////////////////////////////////
 
+    // tile to move to
+    public Vector2 movementTargetTile;
     //Movement speed
     public float Speed = 1.0f;
     //Starting health
