@@ -112,6 +112,8 @@ public class EnemyLogic : MonoBehaviour
             return;
         }
 
+        //////// work zone bellow, hard hats remaining: 1
+
         //If player is within aggro range, chase it!
         var playerDir = (Player.position - transform.position);
         if (playerDir.magnitude <= AggroRange)
