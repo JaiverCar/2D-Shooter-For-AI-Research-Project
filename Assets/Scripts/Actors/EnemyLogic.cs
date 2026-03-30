@@ -127,12 +127,18 @@ public class EnemyLogic : MonoBehaviour
         }
         else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
             SetAggroState(false);
-		
+
         //Rotate to face the player (unless we are wandering)
-		if (Aggroed == true && Wander == false)
-			transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+        if (Aggroed == true && Wander == false)
+        {
+            transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+                                         // ^ replace by the direction of the tile they are moving twoards 
+        }
         //Note that we account for whether the enemy is up against a wall so we don't get stuck
 
+        // This is how it moves:
+        // Everything before just changes it's rotation
+        // Then at the end of it's update it just moves forward whatever way it's facing
         //Move at designated velocity
         if (Aggroed == true || Wander == true)
             GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
@@ -263,7 +269,7 @@ public class EnemyLogic : MonoBehaviour
             xdist <= wallTransform.localScale.x / 2.0f + transform.localScale.x / 2.0f &&
             MoveHorizontalTimer < -0.25f)
             MoveHorizontalTimer = 0.5f;
-        //If it is vertical, reset the horizontal move timer so we only move vertical for a bit
+        //If it is vertical, reset the vertical move timer so we only move vertical for a bit
         if (ydist < xdist &&
             ydist <= wallTransform.localScale.y / 2.0f + transform.localScale.x / 2.0f &&
             MoveVerticalTimer < -0.25f)
