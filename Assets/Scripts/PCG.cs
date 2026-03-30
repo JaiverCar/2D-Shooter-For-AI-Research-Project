@@ -142,11 +142,11 @@ public class PCG : MonoBehaviour
 
         //Add some test enemies
         Spawn("enemy", 4.5f, 4.5f);
-        Spawn("fast", 0.0f, 4.5f);
-        Spawn("tank", 4.5f, 0.0f);
-        Spawn("ultra", -4.5f, 4.5f);
-        Spawn("spread", -4.5f, -4.5f);
-        Spawn("boss", 0.0f, -4.5f);
+        //Spawn("fast", 0.0f, 4.5f);
+        //Spawn("tank", 4.5f, 0.0f);
+        //Spawn("ultra", -4.5f, 4.5f);
+        //Spawn("spread", -4.5f, -4.5f);
+        //Spawn("boss", 0.0f, -4.5f);
 
         //Don't forget the exit...
         Spawn("portal", 5.0f, -5.0f);

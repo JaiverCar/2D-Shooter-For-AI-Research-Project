@@ -93,8 +93,8 @@ public class EnemyLogic : MonoBehaviour
             return;
         }
 
-        //Check to see if we are already tracking the player
-        TrackThePlayer();
+        //Check to see if we have a reference to the player
+        GetPlayerReference();
 
         //Increment the timers
         Timer += Time.deltaTime;
@@ -113,8 +113,8 @@ public class EnemyLogic : MonoBehaviour
         }
 
         //If player is within aggro range, chase it!
-        var dir = (Player.position - transform.position);
-        if (dir.magnitude <= AggroRange)
+        var playerDir = (Player.position - transform.position);
+        if (playerDir.magnitude <= AggroRange)
 		{
 			if (Aggroed == false)
 			{
@@ -123,12 +123,12 @@ public class EnemyLogic : MonoBehaviour
 			}
             SetAggroState(true);
         }
-        else if (dir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
+        else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
             SetAggroState(false);
 		
         //Rotate to face the player (unless we are wandering)
 		if (Aggroed == true && Wander == false)
-			transform.up = SnapVectorToGrid(dir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+			transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
         //Note that we account for whether the enemy is up against a wall so we don't get stuck
 
         //Move at designated velocity
@@ -155,8 +155,8 @@ public class EnemyLogic : MonoBehaviour
         Aggroed = active;
     }
 
-    //Track the player
-    void TrackThePlayer()
+    //Get a reference to the player
+    void GetPlayerReference()
     {
         //Already tracking the player
         if (Player != null)
