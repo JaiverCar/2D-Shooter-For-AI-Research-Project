@@ -100,8 +100,8 @@ public class EnemyLogic : MonoBehaviour
 
         //Increment the timers
         Timer += Time.deltaTime;
-		MoveVerticalTimer -= Time.deltaTime;
-		MoveHorizontalTimer -= Time.deltaTime;
+        MoveVerticalTimer -= Time.deltaTime;
+        MoveHorizontalTimer -= Time.deltaTime;
 
         //Should we wander in a random direction?
         //WanderingUpdate(); // disabled wander until we have A* implemented ----------------- 
@@ -117,38 +117,45 @@ public class EnemyLogic : MonoBehaviour
         //////// work zone bellow, hard hats remaining: 1
 
         //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
-        
-  //      //If player is within aggro range, chase it!
-  //      var playerDir = (Player.position - transform.position);
-  //      if (playerDir.magnitude <= AggroRange)
-		//{
-		//	if (Aggroed == false)
-		//	{
-		//		Wander = false;
-		//		Timer = 0;
-		//	}
-  //          SetAggroState(true);
-  //      }
-  //      else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
-  //          SetAggroState(false);
 
-  //      //Rotate to face the player (unless we are wandering)
-  //      if (Aggroed == true && Wander == false)
-  //      {
-  //          transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
-  //                                       // ^ replace by the direction of the tile they are moving twoards 
-  //      }
-  //      //Note that we account for whether the enemy is up against a wall so we don't get stuck
-        
+        //      //If player is within aggro range, chase it!
+        //      var playerDir = (Player.position - transform.position);
+        //      if (playerDir.magnitude <= AggroRange)
+        //{
+        //	if (Aggroed == false)
+        //	{
+        //		Wander = false;
+        //		Timer = 0;
+        //	}
+        //          SetAggroState(true);
+        //      }
+        //      else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
+        //          SetAggroState(false);
+
+        //      //Rotate to face the player (unless we are wandering)
+        //      if (Aggroed == true && Wander == false)
+        //      {
+        //          transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+        //                                       // ^ replace by the direction of the tile they are moving twoards 
+        //      }
+        //      //Note that we account for whether the enemy is up against a wall so we don't get stuck
+
         //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
+
+        // convert our movement target location from grid to world space
+        Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
+
+        // get the movement direction
+        var movementDir = (movementTargetLocation - transform.position);
+        transform.up = SnapVectorToGrid(movementDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
 
         // This is how it moves:
         // Everything before just changes it's rotation
         // Then at the end of it's update it just moves forward whatever way it's facing
         //Move at designated velocity
-        if (Aggroed == true || Wander == true)
+        if(HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
             GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
-		else //Stop is we are not aggroed or wandering
+        else //Stop is we are not aggroed or wandering
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
     }
 
@@ -302,5 +309,15 @@ public class EnemyLogic : MonoBehaviour
         //Aggro but no damage on friendly fire
         if (bullet != null && bullet.Team != Teams.Player)
             GetComponent<EnemyLogic>().SetAggroState(true);
+    }
+
+    private bool HasReachedMovementTarget(Vector3 movementTargetLocation)
+    {
+        if (Vector3.Distance(movementTargetLocation, transform.position) < 0.02f)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
