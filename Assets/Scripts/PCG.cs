@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class PCG : MonoBehaviour
@@ -32,7 +33,9 @@ public class PCG : MonoBehaviour
     //A static reference to allow easy access from other scripts
     //(if you add a "using static PCG;" statement to that script)
     public static PCG PCGObject;
-	
+
+    private List<GameObject> AllGameOBJ = new List<GameObject>();
+
     //Start is called before the first frame update
     void Start()
     {
@@ -54,6 +57,7 @@ public class PCG : MonoBehaviour
 
         //Generate a level
 		GenerateLevel();
+        GenerateTestRoom();
     }
 
     //Update is called every frame
@@ -94,6 +98,7 @@ public class PCG : MonoBehaviour
         //The level will be solid walls until you add code here. 
         //See the GenerateTestRoom() function for an example,
         //(press T to see the test room).
+        //GenerateTestRoom();
         ///////////////////////////////////////////////////////
 
         //Fill all empty tiles with walls
@@ -117,7 +122,7 @@ public class PCG : MonoBehaviour
         Spawn("player", 0.0f, 0.0f);
 
         //Add some test enemies
-        Spawn("enemy", 7.0f, 7.0f);
+        //Spawn("enemy", 7.0f, 7.0f);
         //Spawn("fast", 0.0f, 4.5f);
         //Spawn("tank", 4.5f, 0.0f);
         //Spawn("ultra", -4.5f, 4.5f);
@@ -125,46 +130,50 @@ public class PCG : MonoBehaviour
         //Spawn("boss", 0.0f, -4.5f);
 
         //Put a bunch of pick-ups around the player
-        Spawn("heart", 2.0f, 2.0f);
-        Spawn("healthboost", 0.0f, 2.0f);
-        Spawn("speedboost", 2.0f, 0.0f);
-        Spawn("shotboost", 2.0f, -2.0f);
-        Spawn("heart", -2.0f, -2.0f);
-        Spawn("healthboost", 0.0f, -2.0f);
-        Spawn("speedboost", -2.0f, 0.0f);
-        Spawn("shotboost", -2.0f, 2.0f);
-        Spawn("heart", 4.0f, 4.0f);
-        Spawn("healthboost", 2.0f, 4.0f);
-        Spawn("speedboost", 4.0f, 2.0f);
-        Spawn("shotboost", 4.0f, -4.0f);
-        Spawn("heart", -4.0f, -4.0f);
-        Spawn("healthboost", 2.0f, -4.0f);
-        Spawn("speedboost", -4.0f, 2.0f);
-        Spawn("shotboost", -4.0f, 4.0f);
+        //Spawn("heart", 2.0f, 2.0f);
+        //Spawn("healthboost", 0.0f, 2.0f);
+        //Spawn("speedboost", 2.0f, 0.0f);
+        //Spawn("shotboost", 2.0f, -2.0f);
+        //Spawn("heart", -2.0f, -2.0f);
+        //Spawn("healthboost", 0.0f, -2.0f);
+        //Spawn("speedboost", -2.0f, 0.0f);
+        //Spawn("shotboost", -2.0f, 2.0f);
+        //Spawn("heart", 4.0f, 4.0f);
+        //Spawn("healthboost", 2.0f, 4.0f);
+        //Spawn("speedboost", 4.0f, 2.0f);
+        //Spawn("shotboost", 4.0f, -4.0f);
+        //Spawn("heart", -4.0f, -4.0f);
+        //Spawn("healthboost", 2.0f, -4.0f);
+        //Spawn("speedboost", -4.0f, 2.0f);
+        //Spawn("shotboost", -4.0f, 4.0f);
 
-        //Create a square room
-        //Note that already placed tiles will not be over-written
-        for (int x = -10; x <= 10; x++)
-            for (int y = -10; y <= 10; y++)
-                SpawnTile(x, y);
+        ////Create a square room
+        ////Note that already placed tiles will not be over - written
+        //for (int x = -10; x <= 10; x++)
+        //    for (int y = -10; y <= 10; y++)
+        //        SpawnTile(x, y);
 
         //Don't forget the exit...
-        Spawn("portal", 8.0f, -8.0f);
+        //Spawn("portal", 8.0f, -8.0f);
 
         //Fill all empty tiles with walls
-        FillWithWalls();
+        //FillWithWalls();
     }
 
     //Clear the entire level except for the PCG object
     void ClearLevel()
     {
         //Delete everything       
-        var objsToDelete = FindObjectsOfType<GameObject>();
-        for (int i = 0; i < objsToDelete.Length; i++)
+        for (int i = 0; i < AllGameOBJ.Count; i++)
         {
-            if (objsToDelete[i].GetComponent<PCG>() == null) //Don't delete the PCG object
-                UnityEngine.Object.DestroyImmediate(objsToDelete[i]);
+            UnityEngine.Object.DestroyImmediate(AllGameOBJ[i]);
         }
+        //var objsToDelete = FindObjectsOfType<GameObject>();
+        //for (int i = 0; i < objsToDelete.Length; i++)
+        //{
+        //    if (objsToDelete[i].GetComponent<PCG>() == null) //Don't delete the PCG object
+        //        UnityEngine.Object.DestroyImmediate(objsToDelete[i]);
+        //}
     }
 
     //Reset the level after a delay
@@ -217,7 +226,8 @@ public class PCG : MonoBehaviour
     //Spawn any object
     GameObject Spawn(string obj, float x, float y)
 	{
-		return Instantiate(Prefabs[obj], new Vector3(x * GridSize, y * GridSize, 0.0f), Quaternion.identity);
+        AllGameOBJ.Add(Instantiate(Prefabs[obj], new UnityEngine.Vector3(x * GridSize, y * GridSize, 0.0f), UnityEngine.Quaternion.identity));
+        return AllGameOBJ.Last();
 	}
 
 	//Spawn any object rotated 90 degrees left
@@ -236,7 +246,9 @@ public class PCG : MonoBehaviour
     void SpawnCamera()
     {
         var cam = Instantiate(PCGObject.Prefabs["camera"]);
+        AllGameOBJ.Add(cam);
         var wct = Instantiate(PCGObject.Prefabs["cameratarget"]);
+        AllGameOBJ.Add(wct);
         cam.GetComponent<CameraFollow>().ObjectToFollow = wct.transform;
     }
 
