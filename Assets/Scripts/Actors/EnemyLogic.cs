@@ -142,6 +142,9 @@ public class EnemyLogic : MonoBehaviour
 
         //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
 
+
+        movementTargetTile = GameManager.Instance.ourFlag.position;
+
         // convert our movement target location from grid to world space
         Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
 
