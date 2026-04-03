@@ -12,9 +12,53 @@ public class Node
     public Vector2 worldPosition;
     public int gridX, gridY;
 
+    public Vector2 pos => new Vector2(gridX, gridY);
+
     public int gCost, hCost;
     public Node parent;
     public int fCost => gCost + hCost;
+
+    public enum SearchStatus
+    { 
+        onOpen = 0,
+        onClosed = 1
+    }
+
+    public SearchStatus status;
+
+    internal class nodeEdge
+    {
+        Vector2 pos;
+        int cost;
+    }
+
+
+    public List<Node> neighbors;
+
+    public void getNeighbors()
+    {
+        int[] dirR = { -1, -1, -1, 0, 0, 1, 1, 1};
+        int[] dirC = { -1, 0, 1, -1, 1, -1, 0, 1 };
+
+        neighbors.Clear();
+
+        for(int i = 0; i < 8; i++)
+        {
+            Vector2 np = pos;
+            np.x += dirR[i];
+            np.y += dirC[i];
+
+            bool diagonal = (math.abs(dirR[i]) == 1 && math.abs(dirC[i]) == 1);
+            float cost = diagonal ? 1.41421356237f : 1.0f;
+
+            nodeEdge edge;
+            edge.pos = np;
+            edge.cost = cost;
+
+            neighbors.Add(edge);
+        }
+    }
+
 
     public Node(bool walkable, Vector2 worldPos, int gridX, int gridY)
     {
@@ -22,6 +66,28 @@ public class Node
         this.worldPosition = worldPos;
         this.gridX = gridX;
         this.gridY = gridY;
+        this.status = SearchStatus.onOpen;
+    }
+
+
+    public bool IsLowerF(Node other)
+    {
+        if (fCost < other.fCost)
+        {
+            return true;
+        }
+
+        if (fCost > other.fCost)
+        {
+            return false;
+        }
+
+        if(gCost < other.gCost)
+        {
+            return true;
+        }
+
+       return false;
     }
 }
 
@@ -64,6 +130,20 @@ public class AStarGrid : MonoBehaviour
                 bool walkable = Physics2D.OverlapCircle(worldPoint, nodeRadius * 0.9f, obstacleLayer) == null;
                 grid[x, y] = new Node(walkable, worldPoint, x, y);
             }
+    }
+
+    public bool IsValidGridPos(Vector2 pos)
+    {
+        if (!(pos.x <= gridSizeX) && !(pos.x >= 0))
+        {
+            return false;
+        }
+        if (!(pos.y <= gridSizeY) && !(pos.y >= 0))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public Node NodeFromWorldPoint(Vector2 worldPos)
