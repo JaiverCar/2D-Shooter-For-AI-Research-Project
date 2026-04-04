@@ -34,13 +34,22 @@ public class FlockingLogic : MonoBehaviour
         // find all our allies that are within our echoRadius
         foreach (EnemyLogic ally in allies) 
         {
-            Vector3 allyPos = ally.transform.position;
-            float dist = Vector3.Distance(ourPos, allyPos);
-
-            if (dist < echoRadius)
+            if (ally != GetComponentInParent<EnemyLogic>())
             {
-                nearbyAllies.Add(ally);
+                Vector3 allyPos = ally.transform.position;
+                float dist = Vector3.Distance(ourPos, allyPos);
+
+                if (dist < echoRadius)
+                {
+                    nearbyAllies.Add(ally);
+                }
             }
+        }
+
+        // return if we found 0 allies nearby
+        if (nearbyAllies.Count == 0)
+        {
+            return;
         }
 
         Vector3 cPos = Cohesion();

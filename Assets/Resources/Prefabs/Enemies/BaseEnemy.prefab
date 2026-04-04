@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -7185317464817198407}
   - component: {fileID: 1063118913074609497}
   - component: {fileID: 8264996340615861227}
+  - component: {fileID: 4905951875147358756}
   m_Layer: 0
   m_Name: BaseEnemy
   m_TagString: Enemy
@@ -139,12 +140,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cb435cdb91a54544888208bc71f98fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  movementTargetTile: {x: 0, y: 0}
   Speed: 2
   StartingHealth: 3
   AggroRange: 6
   WanderInterval: 2
   WanderChance: 0.3
   DropChance: 0.1
+  echoRadius: 0
   Aggroed: 0
   Wander: 0
   Player: {fileID: 0}
@@ -164,6 +167,18 @@ MonoBehaviour:
   Weight: 1
   Padding: 5
   Cinematic: 0
+--- !u!114 &4905951875147358756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1063118913074609479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b5464ed7fd65ab409bc0d99ce1e381d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &950290501062243365
 PrefabInstance:
   m_ObjectHideFlags: 0
