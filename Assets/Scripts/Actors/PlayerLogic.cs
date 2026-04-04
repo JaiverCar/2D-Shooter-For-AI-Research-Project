@@ -101,16 +101,31 @@ public class PlayerLogic : MonoBehaviour
         //Reset direction every frame
         Vector2 dir = Vector2.zero;
 
-        //Determine movement direction based on input
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-            dir += Vector2.up;
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            dir += Vector2.left;
-        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-            dir += Vector2.down;
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            dir += Vector2.right;
-
+        // if we are NOT holding down C we can use the arrow keys and wasd to move
+        if (Input.GetKey(KeyCode.C) == false)
+        {
+            //Determine movement direction based on input
+            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+                dir += Vector2.up;
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+                dir += Vector2.left;
+            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+                dir += Vector2.down;
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+                dir += Vector2.right;
+        }
+        else // if we ARE holding down C, we can ONLY use wasd to move
+        {
+            //Determine movement direction based on input
+            if (Input.GetKey(KeyCode.W))
+                dir += Vector2.up;
+            if (Input.GetKey(KeyCode.A))
+                dir += Vector2.left;
+            if (Input.GetKey(KeyCode.S))
+                dir += Vector2.down;
+            if (Input.GetKey(KeyCode.D))
+                dir += Vector2.right;
+        }
         //Apply velocity
         GetComponent<Rigidbody2D>().velocity = dir.normalized * Speed;
     }

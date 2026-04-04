@@ -11,7 +11,9 @@ Description:
 
 *******************************************************************************/
 
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class CameraFollow : MonoBehaviour
 {
@@ -29,7 +31,8 @@ public class CameraFollow : MonoBehaviour
     private float ZoomInInterpolant = 0.1f;
     //Map mode zoom size
     private float MapModeZoom = 100.0f; //This might need to be bigger if you have a large level
-
+    //Speed for when manually moving the camera
+    private float CameraMoveSpeed = 5.0f;
     //////////////////////////////////////////////////////////////////////////
 
     //The camera target being followed
@@ -46,11 +49,34 @@ public class CameraFollow : MonoBehaviour
         if (ObjectToFollow == null)
             return;
 
-        //Follow the camera target
-        FollowTarget();
+        // if not pressing C
+        if (Input.GetKey(KeyCode.C) == false)
+        {
+            //Follow the camera target
+            FollowTarget();
 
-        //Adjust the zoom level
-        AdjustZoom();
+            //Adjust the zoom level
+            AdjustZoom();
+        }
+        else
+        {
+            if (Input.GetKey(KeyCode.UpArrow)) // move camera up
+            {
+                transform.position = new Vector3(transform.position.x, transform.position.y + (CameraMoveSpeed * Time.deltaTime), transform.position.z);
+            }
+            if (Input.GetKey(KeyCode.DownArrow)) // move camera down
+            {
+                transform.position = new Vector3(transform.position.x, transform.position.y - (CameraMoveSpeed * Time.deltaTime), transform.position.z);
+            }
+            if (Input.GetKey(KeyCode.RightArrow)) // move camera right
+            {
+                transform.position = new Vector3(transform.position.x + (CameraMoveSpeed * Time.deltaTime), transform.position.y, transform.position.z);
+            }
+            if (Input.GetKey(KeyCode.LeftArrow)) // move camera left
+            {
+                transform.position = new Vector3(transform.position.x - (CameraMoveSpeed * Time.deltaTime), transform.position.y, transform.position.z);
+            }
+        }
 
         //M to see the whole map
         if (Input.GetKey(KeyCode.M))
