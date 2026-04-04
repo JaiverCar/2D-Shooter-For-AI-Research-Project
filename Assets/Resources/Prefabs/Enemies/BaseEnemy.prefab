@@ -147,7 +147,7 @@ MonoBehaviour:
   WanderInterval: 2
   WanderChance: 0.3
   DropChance: 0.1
-  echoRadius: 0
+  echoRadius: 5
   Aggroed: 0
   Wander: 0
   Player: {fileID: 0}
