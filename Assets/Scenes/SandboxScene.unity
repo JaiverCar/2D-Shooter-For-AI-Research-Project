@@ -425,6 +425,11 @@ PrefabInstance:
       propertyPath: echoRadius
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 4905951875147358756, guid: 7bbc359642d90cc4283782509ae8c264,
+        type: 3}
+      propertyPath: echoRadius
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7bbc359642d90cc4283782509ae8c264, type: 3}
 --- !u!4 &631064695 stripped
@@ -775,6 +780,11 @@ PrefabInstance:
         type: 3}
       propertyPath: echoRadius
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4905951875147358756, guid: 7bbc359642d90cc4283782509ae8c264,
+        type: 3}
+      propertyPath: echoRadius
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7bbc359642d90cc4283782509ae8c264, type: 3}

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
+using static UnityEngine.Rendering.HableCurve;
 
 public class FlockingLogic : MonoBehaviour
 {
@@ -75,10 +76,26 @@ public class FlockingLogic : MonoBehaviour
         return sumPos;
     }
 
-    // Visualize in editor
-    void OnDrawGizmos()
+    private float segments = 60.0f;
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, echoRadius);
+
+        float angleStep = 360.0f / segments;
+        Vector3 prevPoint = transform.position + new Vector3(echoRadius, 0, 0);
+
+        for (int i = 1; i <= segments; i++)
+        {
+            float angle = Mathf.Deg2Rad * angleStep * i;
+
+            Vector3 newPoint = transform.position + new Vector3(
+                Mathf.Cos(angle) * echoRadius,
+                Mathf.Sin(angle) * echoRadius,
+                0
+            );
+
+            Gizmos.DrawLine(prevPoint, newPoint);
+            prevPoint = newPoint;
+        }
     }
 }
