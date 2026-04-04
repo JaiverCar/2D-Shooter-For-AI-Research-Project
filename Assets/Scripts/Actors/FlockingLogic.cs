@@ -14,7 +14,7 @@ public class FlockingLogic : MonoBehaviour
     void Start()
     {
         // get the "echo" radius from the enemy we're attached to
-        GetComponentInParent<EnemyLogic>();
+        echoRadius = GetComponentInParent<EnemyLogic>().GetEchoRadius();
 
         // the echo radius should always be greater than zero
         Debug.Assert(echoRadius > 0);
@@ -43,6 +43,9 @@ public class FlockingLogic : MonoBehaviour
             }
         }
 
+        Vector3 cPos = Cohesion();
+
+        Debug.Log(cPos);
     }
 
     private Vector3 Cohesion()

@@ -36,6 +36,9 @@ public class EnemyLogic : MonoBehaviour
     public float DropChance = 0.35f; //35% chance
 
     //////////////////////////////////////////////////////////////////////////
+    [Header("Variables for flocking:")]
+    [SerializeField]
+    private float echoRadius = 0;
 
     //Current health
     [HideInInspector]
@@ -321,5 +324,10 @@ public class EnemyLogic : MonoBehaviour
         }
 
         return false;
+    }
+
+    public float GetEchoRadius()
+    {
+        return echoRadius;
     }
 }
