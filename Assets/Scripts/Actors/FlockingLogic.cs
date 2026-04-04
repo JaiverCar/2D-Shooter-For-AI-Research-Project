@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Bson;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,8 +7,15 @@ using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
 using static UnityEngine.Rendering.HableCurve;
 
+
+
 public class FlockingLogic : MonoBehaviour
 {
+    public void DumbTest()
+    {
+        Debug.Log("THIS WOEKDSS");
+    }
+
     // a referance to this enemy's echo radius
     private float echoRadius = 0;
 
@@ -61,8 +69,6 @@ public class FlockingLogic : MonoBehaviour
         Vector3 sPos = DoSeparation();
 
         Vector3 aPos = DoAlignment();
-
-        Debug.Log(cPos);
     }
 
     // Cohesion gets enemies to come together 
@@ -131,5 +137,10 @@ public class FlockingLogic : MonoBehaviour
             Gizmos.DrawLine(prevPoint, newPoint);
             prevPoint = newPoint;
         }
+    }
+
+    public void SetEchoRadius(float newRadius)
+    {
+        echoRadius = newRadius;
     }
 }
