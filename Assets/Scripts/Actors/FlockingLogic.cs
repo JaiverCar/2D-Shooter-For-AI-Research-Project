@@ -6,18 +6,20 @@ using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
 using static UnityEngine.Rendering.HableCurve;
+using Random = UnityEngine.Random;
 
 
 
 public class FlockingLogic : MonoBehaviour
 {
-    public void DumbTest()
-    {
-        Debug.Log("THIS WOEKDSS");
-    }
-
     // a referance to this enemy's echo radius
     private float echoRadius = 0;
+
+    // a referance to our leaders position
+    public Vector3 leaderPos = Vector3.zero;
+
+    // a referance to the tether radius of this enemies leader, if it has a leader
+    public float tetherRadius = 0;
 
     // a list to store all our allies, that are within our echoRadius 
     private List<EnemyLogic> nearbyAllies = new List<EnemyLogic>();
@@ -35,6 +37,12 @@ public class FlockingLogic : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // frist we will check if this enemy has a leader
+        // if they do then we will get the leader's Tether radius
+        // then assert if that radius is 0 for some reason
+        // then save our leader pos
+
+
         // clear the list so we can update it
         nearbyAllies.Clear();
 
@@ -64,11 +72,15 @@ public class FlockingLogic : MonoBehaviour
             return;
         }
 
-        Vector3 cPos = DoCohesion();
+        Vector3 cPos = DoCohesion(); // the position to move towards our allies
 
-        Vector3 sPos = DoSeparation();
+        Vector3 sPos = DoSeparation(); // the position to move away from our allies 
 
-        Vector3 aPos = DoAlignment();
+        Vector3 aDir = DoAlignment(); // the direction to turn to align with our nearby allies
+
+        Vector3 rPos = DoWander(); // a random position to wander to
+
+        Vector3 tDir = DoTether(); // the direction our tether is pulling us in
     }
 
     // Cohesion gets enemies to come together 
@@ -95,7 +107,7 @@ public class FlockingLogic : MonoBehaviour
         return DoCohesion() * -1;
     }
 
-    // Separation gets enemes to try and face the same direction 
+    // Alignment gets enemes to try and face the same direction 
     private Vector3 DoAlignment()
     {
         Vector2 sumFacing = Vector2.zero;
@@ -104,15 +116,46 @@ public class FlockingLogic : MonoBehaviour
         foreach (EnemyLogic ally in nearbyAllies)
         {
             sumFacing += ally.GetComponent<Rigidbody2D>().velocity;
-            sumFacing = sumFacing.normalized;
         }
 
         // divide to get the average
         sumFacing /= nearbyAllies.Count;
 
+        // normalize cause we only care about the direction
+        sumFacing = sumFacing.normalized;
+
         return new Vector3(sumFacing.x, sumFacing.y, 0.0f);
     }
 
+    // Wander gives them a random point to make their movements "wiggle"
+    private Vector3 DoWander()
+    {
+        Vector3 randPos = Vector3.zero;
+
+        randPos.x = Random.Range(-1000.0f, 1000.0f);
+        randPos.y = Random.Range(-1000.0f, 1000.0f);
+
+        return randPos;
+    }
+
+    // Tether makes sure that they stay within bounds of their leader
+    private Vector3 DoTether()
+    {
+        Vector3 leaderDirection = Vector3.zero;
+
+        // get the distance between this enemy and it's leader
+        Vector3 ourPos = transform.position;
+        float dist = Vector3.Distance(ourPos, leaderPos);
+
+        // if we went past the tether radius of our leader
+        if (dist > tetherRadius)
+        {
+            // get the normalized direction back to our leader
+            leaderDirection = (leaderPos - ourPos).normalized;
+        }
+
+        return leaderDirection;
+    }
 
     private float segments = 60.0f;
     private void OnDrawGizmos()
