@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 public class FlockingLogic : MonoBehaviour
 {
@@ -8,7 +11,7 @@ public class FlockingLogic : MonoBehaviour
     private float echoRadius = 0;
 
     // a list to store all our allies, that are within our echoRadius 
-   private List<EnemyLogic> nearbyAllies = new List<EnemyLogic>();
+    private List<EnemyLogic> nearbyAllies = new List<EnemyLogic>();
 
     // Start is called before the first frame update
     void Start()
@@ -28,11 +31,11 @@ public class FlockingLogic : MonoBehaviour
 
         // get all our allies in the scene.
         var allies = FindObjectsOfType<EnemyLogic>();
-        
+
         Vector3 ourPos = transform.position;
 
         // find all our allies that are within our echoRadius
-        foreach (EnemyLogic ally in allies) 
+        foreach (EnemyLogic ally in allies)
         {
             if (ally != GetComponentInParent<EnemyLogic>())
             {
@@ -70,5 +73,12 @@ public class FlockingLogic : MonoBehaviour
         sumPos /= nearbyAllies.Count;
 
         return sumPos;
+    }
+
+    // Visualize in editor
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, echoRadius);
     }
 }
