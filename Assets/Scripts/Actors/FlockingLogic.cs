@@ -56,12 +56,17 @@ public class FlockingLogic : MonoBehaviour
             return;
         }
 
-        Vector3 cPos = Cohesion();
+        Vector3 cPos = DoCohesion();
+
+        Vector3 sPos = DoSeparation();
+
+        Vector3 aPos = DoAlignment();
 
         Debug.Log(cPos);
     }
 
-    private Vector3 Cohesion()
+    // Cohesion gets enemies to come together 
+    private Vector3 DoCohesion()
     {
         Vector3 sumPos = Vector3.zero;
 
@@ -71,16 +76,45 @@ public class FlockingLogic : MonoBehaviour
             sumPos += ally.transform.position;
         }
 
+        // divide to get the average
         sumPos /= nearbyAllies.Count;
 
         return sumPos;
     }
 
+    // Separation gets enemes to move away from each other 
+    private Vector3 DoSeparation() 
+    {
+        // returns the vector from cohesion pointing in  the opposite direction 
+        return DoCohesion() * -1;
+    }
+
+    // Separation gets enemes to try and face the same direction 
+    private Vector3 DoAlignment()
+    {
+        Vector2 sumFacing = Vector2.zero;
+
+        // added up all the facing vectors from our nearbyAllies
+        foreach (EnemyLogic ally in nearbyAllies)
+        {
+            sumFacing += ally.GetComponent<Rigidbody2D>().velocity;
+            sumFacing = sumFacing.normalized;
+        }
+
+        // divide to get the average
+        sumFacing /= nearbyAllies.Count;
+
+        return new Vector3(sumFacing.x, sumFacing.y, 0.0f);
+    }
+
+
     private float segments = 60.0f;
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
+        Gizmos.color = Color.green;
+        Gizmos.DrawRay(transform.position, GetComponent<Rigidbody2D>().velocity.normalized);
 
+        Gizmos.color = Color.red;
         float angleStep = 360.0f / segments;
         Vector3 prevPoint = transform.position + new Vector3(echoRadius, 0, 0);
 
