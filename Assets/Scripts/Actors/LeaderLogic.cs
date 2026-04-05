@@ -29,8 +29,8 @@ public class LeaderLogic : MonoBehaviour
                 Vector3 allyPos = ally.transform.position;
                 float dist = Vector3.Distance(ourPos, allyPos);
 
-                // and they are within our tether radius
-                if (dist < tetherRadius)
+                // and they are within our tether radius AND do not have a leader yet
+                if (dist < tetherRadius && ally.HasLeader() == false)
                 {
                     // set it's leader to ourselves
                     ally.SetLeader(this);
@@ -42,5 +42,27 @@ public class LeaderLogic : MonoBehaviour
     public float GetTetherRadius()
     {
         return tetherRadius;
+    }
+
+    private float segments = 60.0f;
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        float angleStep = 360.0f / segments;
+        Vector3 prevPoint = transform.position + new Vector3(tetherRadius, 0, 0);
+
+        for (int i = 1; i <= segments; i++)
+        {
+            float angle = Mathf.Deg2Rad * angleStep * i;
+
+            Vector3 newPoint = transform.position + new Vector3(
+                Mathf.Cos(angle) * tetherRadius,
+                Mathf.Sin(angle) * tetherRadius,
+                0
+            );
+
+            Gizmos.DrawLine(prevPoint, newPoint);
+            prevPoint = newPoint;
+        }
     }
 }
