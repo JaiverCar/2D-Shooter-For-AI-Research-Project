@@ -302,7 +302,7 @@ PrefabInstance:
     - target: {fileID: 6048948920214717229, guid: 16616d77ae194aa4794c0e3b71b0e189,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: 16616d77ae194aa4794c0e3b71b0e189,
         type: 3}
@@ -492,7 +492,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cohesionStrength: 0.5
   separationStrength: 0.5
-  alignmentStrength: 0.5
+  alignmentStrength: 12.5
   wanderStrength: 0.05
   tetherStrength: 1
 --- !u!850595691 &336224611
@@ -843,7 +843,7 @@ Canvas:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 569852822}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_RenderMode: 0
   m_Camera: {fileID: 0}
@@ -927,7 +927,7 @@ PrefabInstance:
     - target: {fileID: 1063118913074609497, guid: 7bbc359642d90cc4283782509ae8c264,
         type: 3}
       propertyPath: echoRadius
-      value: 5
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4905951875147358756, guid: 7bbc359642d90cc4283782509ae8c264,
         type: 3}
@@ -1615,7 +1615,7 @@ PrefabInstance:
     - target: {fileID: 1063118913074609497, guid: 7bbc359642d90cc4283782509ae8c264,
         type: 3}
       propertyPath: echoRadius
-      value: 5
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4905951875147358756, guid: 7bbc359642d90cc4283782509ae8c264,
         type: 3}
