@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.Rendering.DebugUI;
 using static UnityEngine.Rendering.HableCurve;
 using Random = UnityEngine.Random;
@@ -113,6 +114,16 @@ public class FlockingLogic : MonoBehaviour
         // zero out the direction vector to contruct it again
         direction = Vector3.zero;
 
+
+        // zero out the gaol vector to contruct it again
+        goal = Vector3.zero;
+
+        // get the value of all our modifiers
+        float tStrenght = flockController.GetTetherStrength(); // tether strength
+        float sStrenght = flockController.GetSeparationStrength(); // separation strength
+        float cStrenght = flockController.GetCohesionStrength(); // cohesion strength
+        float aStrenght = flockController.GetAlignmentStrength(); // alignment strength
+
         // if this enemy has NO leader or NO group
         if (thisEnemy.HasLeader() == false && hasGroup == false)
         {
@@ -125,38 +136,78 @@ public class FlockingLogic : MonoBehaviour
 
             Vector3 tDir = DoTether(); // the direction our tether is pulling us in
 
-            direction += (tDir);
+            direction += (tDir * tStrenght);
         }
         // if this enemy has NO leader, but has a group
         if (thisEnemy.HasLeader() == false && hasGroup == true)
         {
             // do wander, cohesion, separation, and alignment BUT NOT tether
+
+            Vector3 sPos = DoSeparation(); // the direction to move away from our allies 
+
+            Vector3 cPos = DoCohesion(); // the position to move towards our allies
+
+            goal += (sPos * sStrenght) + (cPos * cStrenght);
+
+            //Vector3 aDir = DoAlignment(); // the direction to turn to align with our nearby allies
+            //direction += (aDir * aStrenght);
+
+            // testing
+            if (Vector3.Distance(cPos, ourPos) > 10.0f)
+            {
+                Vector3 cDir = (cPos - ourPos).normalized;
+
+                direction += cDir;
+            }
+            if (Vector3.Distance(sPos, ourPos) < 5.0f)
+            {
+                Vector3 sDir = (sPos - ourPos).normalized;
+
+                direction += sDir;
+            }
+            //direction += (sDir * sStrenght) + (cDir * cStrenght);
         }
         // if this enemy has a leader and a group
         if (thisEnemy.HasLeader() == true && hasGroup == true)
         {
             // do wander, cohesion, separation, alignment, and tether
 
-            Vector3 tDir = DoTether(); // the direction our tether is pulling us in
+            Vector3 sPos = DoSeparation(); // the direction to move away from our allies 
 
-            direction += (tDir);
+            Vector3 cPos = DoCohesion(); // the position to move towards our allies
+
+            goal += (sPos * sStrenght) + (cPos * cStrenght);
+
+            //Vector3 aDir = DoAlignment(); // the direction to turn to align with our nearby allies
+            //direction += (aDir * aStrenght);
+
+            Vector3 tDir = DoTether(); // the direction our tether is pulling us in
+            direction += (tDir * tStrenght);
+
+            // testing
+            if (Vector3.Distance(cPos, ourPos) > 10.0f)
+            {
+                Vector3 cDir = (cPos - ourPos).normalized;
+
+                direction += cDir;
+            }
+            if (Vector3.Distance(sPos, ourPos) < 5.0f)
+            {
+                Vector3 sDir = (sPos - ourPos).normalized;
+
+                direction += sDir;
+            }
+            //direction += (sDir * sStrenght) + (cDir * cStrenght);
         }
 
-        float tStrenght = flockController.GetTetherStrength();
-
         // get the weighted average of all our calcuated directions
-        direction /= (tStrenght);
+        //direction /= (tStrenght + aStrenght + sStrenght +cStrenght);
 
 
-        // too unstables
-        //Vector3 cPos = DoCohesion(); // the position to move towards our allies
-        //float cStrenght = flockController.GetCohesionStrength();
+        // get the weighted average of all our calcuated positions
+        goal /= (sStrenght + cStrenght);
 
-        //Vector3 sPos = DoSeparation(); // the position to move away from our allies 
-        //float sStrenght = flockController.GetSeparationStrength();
-
-        //Vector3 aDir = DoAlignment(); // the direction to turn to align with our nearby allies
-        //float aStrenght = flockController.GetAlignmentStrength();
+        // too unstable
 
         //Vector3 rPos = DoWander(); // a random position to wander to
         //float rStrenght = flockController.GetWanderStrength();
@@ -204,8 +255,17 @@ public class FlockingLogic : MonoBehaviour
     // Separation gets enemes to move away from each other 
     private Vector3 DoSeparation() 
     {
-        // returns the vector from cohesion pointing in  the opposite direction 
-        return DoCohesion() * -1;
+        // get the average positon of our nearby allies
+        Vector3 targaet = DoCohesion();
+
+        // get the direction to our target DO NOT normalize
+        Vector3 ourPos = transform.position;
+        Vector3  targetDirection = (targaet - ourPos);
+
+        // get a target position in the oppisite direction from our nearby allies but of same distance away from us
+        Vector3 oppTargetPos = ourPos - targetDirection;
+
+        return oppTargetPos;
     }
 
     // Alignment gets enemes to try and face the same direction 

@@ -9,8 +9,8 @@ public class FlockController : MonoBehaviour
     [Range(0.0f, 100.0f)]
     private float cohesionStrength = 0.0f;
     [SerializeField]
-    [Range(0.0f, 100.0f)]
-    private float separationStrength = 0.0f;
+    [Range(1.0f, 99.0f)]
+    private float separationStrength = 0.5f;
     [SerializeField]
     [Range(0.0f, 100.0f)]
     private float alignmentStrength = 0.0f;

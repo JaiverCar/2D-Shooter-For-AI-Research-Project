@@ -97,6 +97,9 @@ public class EnemyLogic : MonoBehaviour
         Health = StartingHealth;
     }
 
+    // FOR TESTING-------------------------------------
+    Vector3 temp = Vector3.zero;
+
     // Update is called once per frame
     void Update()
     {
@@ -162,25 +165,27 @@ public class EnemyLogic : MonoBehaviour
             // convert our movement target location from grid to world space
             Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
 
-            movementTargetLocation = GetComponent<FlockingLogic>().GetGoal();
+            //temp = GetComponent<FlockingLogic>().GetGoal();//movementTargetLocation = GetComponent<FlockingLogic>().GetGoal();
 
             // get the movement direction
-            //var movementDir = (movementTargetLocation - transform.position);
-            var movementDir = GetComponent<FlockingLogic>().GetDirection();
+            var movementDir = (movementTargetLocation - transform.position);
+            //var movementDir = GetComponent<FlockingLogic>().GetDirection();
 
-            if (movementDir != Vector3.zero)
-            {
-                moveDir = movementDir;
-            }
+            //if (movementDir != Vector3.zero)
+            //{
+            //    moveDir = movementDir;
+            //}
 
-            transform.up = SnapVectorToGrid(moveDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+            transform.up = SnapVectorToGrid(movementDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
 
             // This is how it moves:
             // Everything before just changes it's rotation
             // Then at the end of it's update it just moves forward whatever way it's facing
             //Move at designated velocity
-            //if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
+            if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
                 GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
+            else
+                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             //else //Stop if we are not aggroed or wandering
                 //GetComponent<Rigidbody2D>().velocity = Vector2.zero;
         }
@@ -390,5 +395,12 @@ public class EnemyLogic : MonoBehaviour
     public LeaderLogic GetLeader() 
     { 
         return leader; 
-    }   
+    }
+
+
+    private void OnDrawGizmos()
+    {
+       //Gizmos.color = Color.yellow;
+       //Gizmos.DrawWireSphere(temp, 0.5f);
+    }
 }
