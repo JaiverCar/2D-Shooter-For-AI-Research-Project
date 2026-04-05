@@ -12,6 +12,9 @@ using Random = UnityEngine.Random;
 
 public class FlockingLogic : MonoBehaviour
 {
+    // a referance to our own enemylogic component
+    private EnemyLogic thisEnemy;
+
     // a referance to this enemy's echo radius
     private float echoRadius = 0;
 
@@ -24,23 +27,57 @@ public class FlockingLogic : MonoBehaviour
     // a list to store all our allies, that are within our echoRadius 
     private List<EnemyLogic> nearbyAllies = new List<EnemyLogic>();
 
+    // to save a reference to our flock controller
+    private FlockController flockController;
+
+    // the goal point that the enemy will try to steer to
+    private Vector3 goal = Vector3.zero;
+
+    private Vector3 direction = Vector3.zero;
+
     // Start is called before the first frame update
     void Start()
     {
+        // get a ref to our own EnemyLogic component
+        thisEnemy = GetComponentInParent<EnemyLogic>();
+
+        // this ref should never be null
+        Debug.Assert(thisEnemy != null);
+
         // get the "echo" radius from the enemy we're attached to
-        echoRadius = GetComponentInParent<EnemyLogic>().GetEchoRadius();
+        echoRadius = thisEnemy.GetEchoRadius();
 
         // the echo radius should always be greater than zero
         Debug.Assert(echoRadius > 0);
+
+        // get a ref to our flock controller
+        flockController = FindObjectOfType<FlockController>();
+
+        // the flock controller should never be null
+        Debug.Assert(flockController != null);
     }
 
     // Update is called once per frame
     void Update()
     {
-        // frist we will check if this enemy has a leader
-        // if they do then we will get the leader's Tether radius
-        // then assert if that radius is 0 for some reason
-        // then save our leader pos
+        // if this enemy has a leader
+        if (thisEnemy.HasLeader())
+        {
+            // get the tether radius from our leader
+            tetherRadius = thisEnemy.GetLeader().GetTetherRadius();
+
+            // if we have a leader, then the tether radius should never be 0
+            Debug.Assert(tetherRadius > 0);
+
+            // save a ref to our leaders position
+            leaderPos = thisEnemy.GetLeader().transform.position;
+        }
+        // if this enemy does NOT have a leader
+        else
+        {
+            leaderPos = Vector3.zero;
+            tetherRadius = 0;
+        }
 
 
         // clear the list so we can update it
@@ -54,7 +91,7 @@ public class FlockingLogic : MonoBehaviour
         // find all our allies that are within our echoRadius
         foreach (EnemyLogic ally in allies)
         {
-            if (ally != GetComponentInParent<EnemyLogic>())
+            if (ally != thisEnemy)
             {
                 Vector3 allyPos = ally.transform.position;
                 float dist = Vector3.Distance(ourPos, allyPos);
@@ -66,21 +103,85 @@ public class FlockingLogic : MonoBehaviour
             }
         }
 
+        bool hasGroup = true;
         // return if we found 0 allies nearby
         if (nearbyAllies.Count == 0)
         {
-            return;
+            hasGroup = false;
         }
 
-        Vector3 cPos = DoCohesion(); // the position to move towards our allies
+        // zero out the direction vector to contruct it again
+        direction = Vector3.zero;
 
-        Vector3 sPos = DoSeparation(); // the position to move away from our allies 
+        // if this enemy has NO leader or NO group
+        if (thisEnemy.HasLeader() == false && hasGroup == false)
+        {
+            // just wander
+        }
+        // if this enemy has a leader, but NO group 
+        if (thisEnemy.HasLeader() == true && hasGroup == false)
+        {
+            // do wander and do tether
 
-        Vector3 aDir = DoAlignment(); // the direction to turn to align with our nearby allies
+            Vector3 tDir = DoTether(); // the direction our tether is pulling us in
 
-        Vector3 rPos = DoWander(); // a random position to wander to
+            direction += (tDir);
+        }
+        // if this enemy has NO leader, but has a group
+        if (thisEnemy.HasLeader() == false && hasGroup == true)
+        {
+            // do wander, cohesion, separation, and alignment BUT NOT tether
+        }
+        // if this enemy has a leader and a group
+        if (thisEnemy.HasLeader() == true && hasGroup == true)
+        {
+            // do wander, cohesion, separation, alignment, and tether
 
-        Vector3 tDir = DoTether(); // the direction our tether is pulling us in
+            Vector3 tDir = DoTether(); // the direction our tether is pulling us in
+
+            direction += (tDir);
+        }
+
+        float tStrenght = flockController.GetTetherStrength();
+
+        // get the weighted average of all our calcuated directions
+        direction /= (tStrenght);
+
+
+        // too unstables
+        //Vector3 cPos = DoCohesion(); // the position to move towards our allies
+        //float cStrenght = flockController.GetCohesionStrength();
+
+        //Vector3 sPos = DoSeparation(); // the position to move away from our allies 
+        //float sStrenght = flockController.GetSeparationStrength();
+
+        //Vector3 aDir = DoAlignment(); // the direction to turn to align with our nearby allies
+        //float aStrenght = flockController.GetAlignmentStrength();
+
+        //Vector3 rPos = DoWander(); // a random position to wander to
+        //float rStrenght = flockController.GetWanderStrength();
+
+        //// reset the goal
+        //goal = Vector3.zero;
+
+        //// get a weighted averge of all the positions and directions we calculated
+        //goal += (cStrenght * cPos) + (sStrenght * sPos) + (rStrenght * rPos);//(aStrenght * aDir) + (tStrenght * tDir);
+        //goal /= (cStrenght + sStrenght + rStrenght); //+ tStrenght + aStrenght);
+
+        //direction = Vector3.zero;
+
+        //direction += (aStrenght * aDir) + (tStrenght * tDir);
+        //direction /=  (tStrenght + aStrenght);
+    }
+
+    public Vector3 GetDirection()
+    {
+        return direction;
+    }
+
+    public Vector3 GetGoal()
+    {
+        return goal;
     }
 
     // Cohesion gets enemies to come together 
@@ -143,18 +244,27 @@ public class FlockingLogic : MonoBehaviour
     {
         Vector3 leaderDirection = Vector3.zero;
 
-        // get the distance between this enemy and it's leader
-        Vector3 ourPos = transform.position;
-        float dist = Vector3.Distance(ourPos, leaderPos);
-
-        // if we went past the tether radius of our leader
-        if (dist > tetherRadius)
+        // if the tether radius is set to 0 or anything less, it will not affect the movement of the enemy
+        if (tetherRadius > 0)
         {
-            // get the normalized direction back to our leader
-            leaderDirection = (leaderPos - ourPos).normalized;
+            // get the distance between this enemy and it's leader
+            Vector3 ourPos = transform.position;
+            float dist = Vector3.Distance(ourPos, leaderPos);
+
+            // if we went past the tether radius of our leader
+            if (dist > tetherRadius)
+            {
+                // get the normalized direction back to our leader
+                leaderDirection = (leaderPos - ourPos).normalized;
+            }
         }
 
         return leaderDirection;
+    }
+
+    public void SetEchoRadius(float newRadius)
+    {
+        echoRadius = newRadius;
     }
 
     private float segments = 60.0f;
@@ -163,7 +273,7 @@ public class FlockingLogic : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawRay(transform.position, GetComponent<Rigidbody2D>().velocity.normalized);
 
-        Gizmos.color = Color.red;
+        Gizmos.color = Color.green;
         float angleStep = 360.0f / segments;
         Vector3 prevPoint = transform.position + new Vector3(echoRadius, 0, 0);
 
@@ -180,10 +290,5 @@ public class FlockingLogic : MonoBehaviour
             Gizmos.DrawLine(prevPoint, newPoint);
             prevPoint = newPoint;
         }
-    }
-
-    public void SetEchoRadius(float newRadius)
-    {
-        echoRadius = newRadius;
     }
 }

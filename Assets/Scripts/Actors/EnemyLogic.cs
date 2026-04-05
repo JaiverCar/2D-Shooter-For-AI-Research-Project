@@ -20,6 +20,11 @@ public class EnemyLogic : MonoBehaviour
     // DESIGNER ADJUSTABLE VALUES
     //////////////////////////////////////////////////////////////////////////
 
+    // bool to check if this is a Leader
+    public bool isLeader = false;
+    // bool to check if this is a Grunt
+    public bool isGrunt = false;
+
     // tile to move to
     public Vector2 movementTargetTile;
     //Movement speed
@@ -39,6 +44,10 @@ public class EnemyLogic : MonoBehaviour
     [Header("Variables for flocking:")]
     [SerializeField]
     private float echoRadius = 0;
+    // variable for saving our movement direction between updates
+    private Vector3 moveDir = Vector3.zero;
+    // ref to this enemies leader
+    private LeaderLogic leader;
 
     //Current health
     [HideInInspector]
@@ -145,24 +154,53 @@ public class EnemyLogic : MonoBehaviour
 
         //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
 
-        //movementTargetTile = GameManager.Instance.ourFlag.position;
+        // if this is not a leader it will be affected by the flocking logic
+        if (isLeader == false)
+        {
+            //movementTargetTile = GameManager.Instance.ourFlag.position;
 
-        // convert our movement target location from grid to world space
-        Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
+            // convert our movement target location from grid to world space
+            Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
 
-        // get the movement direction
-        var movementDir = (movementTargetLocation - transform.position);
-        transform.up = SnapVectorToGrid(movementDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+            movementTargetLocation = GetComponent<FlockingLogic>().GetGoal();
 
-        // This is how it moves:
-        // Everything before just changes it's rotation
-        // Then at the end of it's update it just moves forward whatever way it's facing
-        //Move at designated velocity
-        if(HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
-            GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
-        else //Stop is we are not aggroed or wandering
-            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            // get the movement direction
+            //var movementDir = (movementTargetLocation - transform.position);
+            var movementDir = GetComponent<FlockingLogic>().GetDirection();
+
+            if (movementDir != Vector3.zero)
+            {
+                moveDir = movementDir;
+            }
+
+            transform.up = SnapVectorToGrid(moveDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+
+            // This is how it moves:
+            // Everything before just changes it's rotation
+            // Then at the end of it's update it just moves forward whatever way it's facing
+            //Move at designated velocity
+            //if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
+                GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
+            //else //Stop if we are not aggroed or wandering
+                //GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+        }
+        // if this is a leader, then it will only move around with A*
+        else
+        {
+            // convert our movement target location from grid to world space
+            Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
+
+            // This is how it moves:
+            // Everything before just changes it's rotation
+            // Then at the end of it's update it just moves forward whatever way it's facing
+            //Move at designated velocity
+            if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
+                GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
+            else //Stop if we are not aggroed or wandering
+                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+        }
     }
+
 
     //Not using a normal getter and setter so that these calls are more explicit
     public bool IsAggroed()
@@ -330,4 +368,27 @@ public class EnemyLogic : MonoBehaviour
     {
         return echoRadius;
     }
+
+    // returns true if this enemy has a ref to a leader, false if not 
+    public bool HasLeader()
+    {
+        if (leader != null)
+            return true;
+        return false;
+    }
+
+    // set leader ref to a given leader
+    public void SetLeader(LeaderLogic gLeader)
+    {
+        // the given leader should never be null
+        Debug.Assert(gLeader != null);
+       
+        leader = gLeader;
+    }
+
+    // return a ref to this enemies leader
+    public LeaderLogic GetLeader() 
+    { 
+        return leader; 
+    }   
 }
