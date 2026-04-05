@@ -119,7 +119,7 @@ public class PCG : MonoBehaviour
 
         //Create the starting tile
         SpawnTile(0, 0);
-        Spawn("player", 0.0f, 0.0f);
+        Spawn("player", 0.0f, -2.0f);
 
         //Add some test enemies
         //Spawn("enemy", 7.0f, 7.0f);

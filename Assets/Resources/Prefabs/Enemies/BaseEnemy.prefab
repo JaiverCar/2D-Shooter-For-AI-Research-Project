@@ -140,6 +140,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cb435cdb91a54544888208bc71f98fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isLeader: 0
+  isGrunt: 1
   movementTargetTile: {x: 0, y: 0}
   Speed: 2
   StartingHealth: 3
@@ -179,7 +181,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b5464ed7fd65ab409bc0d99ce1e381d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  echoRadius: 0
+  leaderPos: {x: 0, y: 0, z: 0}
+  tetherRadius: 15
 --- !u!1001 &950290501062243365
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -8799634690965059337}
   - component: {fileID: 6048948920214717233}
   - component: {fileID: 3055895041805524547}
+  - component: {fileID: 7201801901939466692}
   m_Layer: 0
   m_Name: BossEnemy
   m_TagString: Enemy
@@ -141,12 +142,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cb435cdb91a54544888208bc71f98fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isLeader: 1
+  isGrunt: 0
+  movementTargetTile: {x: 0, y: 0}
   Speed: 4
   StartingHealth: 20
   AggroRange: 12
   WanderInterval: 2
   WanderChance: 0.3
   DropChance: 0
+  echoRadius: 0
   Aggroed: 0
   Wander: 0
   Player: {fileID: 0}
@@ -166,6 +171,19 @@ MonoBehaviour:
   Weight: 5
   Padding: 5
   Cinematic: 0
+--- !u!114 &7201801901939466692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6048948920214717231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 528a77cfa0e36c5479d540b3dededa5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tetherRadius: 15
 --- !u!1001 &1332717448260522274
 PrefabInstance:
   m_ObjectHideFlags: 0
