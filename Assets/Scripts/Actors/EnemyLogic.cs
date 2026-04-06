@@ -10,6 +10,8 @@ Description:
 
 *******************************************************************************/
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using static PCG;
 
@@ -28,7 +30,7 @@ public class EnemyLogic : MonoBehaviour
     // tile to move to
     public Vector2 movementTargetTile;
     //Movement speed
-    public float Speed = 1.0f;
+    public float Speed = 10.0f;
     //Starting health
     public int StartingHealth = 1;
     //Distance at which the enemy will attack
@@ -79,12 +81,40 @@ public class EnemyLogic : MonoBehaviour
     //Track the player for aggro and targeting purposes
     [HideInInspector]
     public Transform Player = null;
+    public float repathInterval = 1.5f;
+
+    List<Vector2> path;
+    int waypointIndex;
 
     //Don't do anything because a cinematic occuring
     [HideInInspector]
     public bool CinematicMode = false;
 
+    bool advancedThisFrame = false;
+
     // Start is called before the first frame update
+
+    IEnumerator RepathLoop()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(repathInterval);
+
+            if (Player != null)
+            {
+                // only repath if we've reached our current waypoint
+                if (path == null || waypointIndex >= path.Count)
+                {
+                    List<Vector2> newPath = Pathfinder.Instance.FindPath(transform.position, Player.position);
+                    if (newPath != null && newPath.Count > 0)
+                    {
+                        path = newPath;
+                        waypointIndex = 0;
+                    }
+                }
+            }
+        }
+    }
     void Start()
     {
         //Set the minimum range at which aggro will be dropped to 150% of the aggro range
@@ -95,116 +125,191 @@ public class EnemyLogic : MonoBehaviour
         EnemyHealthBar.MaxHealth = StartingHealth;
         EnemyHealthBar.Health = StartingHealth;
         Health = StartingHealth;
+
+        GetPlayerReference();
+
+        StartCoroutine(RepathLoop());
     }
+
 
     // FOR TESTING-------------------------------------
     Vector3 temp = Vector3.zero;
 
-    // Update is called once per frame
-    void Update()
+
+
+
+
+    void FixedUpdate()
     {
-        //Don't do anything if in cinematic mode
-        if (CinematicMode)
+        if (path == null || waypointIndex >= path.Count)
         {
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             return;
         }
 
-        //Check to see if we have a reference to the player
-        GetPlayerReference();
+         advancedThisFrame = false;
 
-        //Increment the timers
-        Timer += Time.deltaTime;
-        MoveVerticalTimer -= Time.deltaTime;
-        MoveHorizontalTimer -= Time.deltaTime;
+        Vector2 target = path[waypointIndex];
+        Vector2 dir = (target - GetComponent<Rigidbody2D>().position).normalized;
+        transform.up = dir;
+        GetComponent<Rigidbody2D>().velocity = dir * Speed;
 
-        //Should we wander in a random direction?
-        //WanderingUpdate(); // disabled wander until we have A* implemented ----------------- 
-
-        //No reference to an active player, nothing to chase
-        if (Player == null || !Player.gameObject.activeInHierarchy)
+        float dist = Vector2.Distance(GetComponent<Rigidbody2D>().position, target);
+        if (dist <= 0.1f && !advancedThisFrame)
         {
+            GetComponent<Rigidbody2D>().MovePosition(target);
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            SetAggroState(false);
-            return;
+            waypointIndex++;
+            advancedThisFrame = true;
         }
 
-        //////// work zone bellow, hard hats remaining: 1
-
-        //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
-
-        //      //If player is within aggro range, chase it!
-        //      var playerDir = (Player.position - transform.position);
-        //      if (playerDir.magnitude <= AggroRange)
-        //{
-        //	if (Aggroed == false)
-        //	{
-        //		Wander = false;
-        //		Timer = 0;
-        //	}
-        //          SetAggroState(true);
-        //      }
-        //      else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
-        //          SetAggroState(false);
-
-        //      //Rotate to face the player (unless we are wandering)
-        //      if (Aggroed == true && Wander == false)
-        //      {
-        //          transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
-        //                                       // ^ replace by the direction of the tile they are moving twoards 
-        //      }
-        //      //Note that we account for whether the enemy is up against a wall so we don't get stuck
-
-        //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
-
-        // if this is not a leader it will be affected by the flocking logic
-        if (isLeader == false)
-        {
-            //movementTargetTile = GameManager.Instance.ourFlag.position;
-
-            // convert our movement target location from grid to world space
-            Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
-
-            //temp = GetComponent<FlockingLogic>().GetGoal();//movementTargetLocation = GetComponent<FlockingLogic>().GetGoal();
-
-            // get the movement direction
-            var movementDir = (movementTargetLocation - transform.position);
-            //var movementDir = GetComponent<FlockingLogic>().GetDirection();
-
-            //if (movementDir != Vector3.zero)
-            //{
-            //    moveDir = movementDir;
-            //}
-
-            transform.up = SnapVectorToGrid(movementDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
-
-            // This is how it moves:
-            // Everything before just changes it's rotation
-            // Then at the end of it's update it just moves forward whatever way it's facing
-            //Move at designated velocity
-            if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
-                GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
-            else
-                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            //else //Stop if we are not aggroed or wandering
-                //GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-        }
-        // if this is a leader, then it will only move around with A*
-        else
-        {
-            // convert our movement target location from grid to world space
-            Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
-
-            // This is how it moves:
-            // Everything before just changes it's rotation
-            // Then at the end of it's update it just moves forward whatever way it's facing
-            //Move at designated velocity
-            if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
-                GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
-            else //Stop if we are not aggroed or wandering
-                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-        }
     }
+
+
+
+
+    // Update is called once per frame
+    //void Update()
+    //{
+    //    //Don't do anything if in cinematic mode
+    //    if (CinematicMode)
+    //    {
+    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+    //        return;
+    //    }
+
+    //    //Check to see if we have a reference to the player
+    //    GetPlayerReference();
+
+    //    if (Player == null || !Player.gameObject.activeInHierarchy)
+    //    {
+    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+    //        return;
+    //    }
+
+    //    if (path == null || waypointIndex >= path.Count)
+    //    {
+    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+    //        return;
+    //    }
+
+    //    Vector2 target = path[waypointIndex];
+    //    float distToWaypoint = Vector2.Distance(transform.position, target);
+
+    //    if (distToWaypoint > 0.1f)
+    //    {
+    //        // Still travelling to this waypoint, keep moving
+    //        Vector2 dir = (target - (Vector2)transform.position).normalized;
+    //        transform.up = dir;
+    //        GetComponent<Rigidbody2D>().velocity = dir * Speed;
+    //    }
+    //    else
+    //    {
+    //        // Reached this waypoint, snap to it and advance
+    //        GetComponent<Rigidbody2D>().MovePosition(target);
+    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+    //        waypointIndex++;
+    //    }
+
+    //    //Increment the timers
+    //    Timer += Time.deltaTime;
+    //    MoveVerticalTimer -= Time.deltaTime;
+    //    MoveHorizontalTimer -= Time.deltaTime;
+
+    //    //Should we wander in a random direction?
+    //    //WanderingUpdate(); // disabled wander until we have A* implemented ----------------- 
+
+    //    //No reference to an active player, nothing to chase
+    //    if (Player == null || !Player.gameObject.activeInHierarchy)
+    //    {
+    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+    //        SetAggroState(false);
+    //        return;
+    //    }
+
+    //    //////// work zone bellow, hard hats remaining: 1
+
+    //    //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
+
+    //    //      //If player is within aggro range, chase it!
+    //    //      var playerDir = (Player.position - transform.position);
+    //    //      if (playerDir.magnitude <= AggroRange)
+    //    //{
+    //    //	if (Aggroed == false)
+    //    //	{
+    //    //		Wander = false;
+    //    //		Timer = 0;
+    //    //	}
+    //    //          SetAggroState(true);
+    //    //      }
+    //    //      else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
+    //    //          SetAggroState(false);
+
+    //    //      //Rotate to face the player (unless we are wandering)
+    //    //      if (Aggroed == true && Wander == false)
+    //    //      {
+    //    //          transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+    //    //                                       // ^ replace by the direction of the tile they are moving twoards 
+    //    //      }
+    //    //      //Note that we account for whether the enemy is up against a wall so we don't get stuck
+
+    //    //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
+
+    //    // if this is not a leader it will be affected by the flocking logic
+    //    if (isLeader == false)
+    //    {
+    //        //movementTargetTile = GameManager.Instance.ourFlag.position;
+
+    //        // convert our movement target location from grid to world space
+    //        Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
+
+    //        //temp = GetComponent<FlockingLogic>().GetGoal();//movementTargetLocation = GetComponent<FlockingLogic>().GetGoal();
+
+    //        // get the movement direction
+    //        var movementDir = (movementTargetLocation - transform.position);
+    //        //var movementDir = GetComponent<FlockingLogic>().GetDirection();
+
+    //        //if (movementDir != Vector3.zero)
+    //        //{
+    //        //    moveDir = movementDir;
+    //        //}
+
+    //        transform.up = SnapVectorToGrid(movementDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+
+    //        // This is how it moves:
+    //        // Everything before just changes it's rotation
+    //        // Then at the end of it's update it just moves forward whatever way it's facing
+    //        //Move at designated velocity
+
+    //        //if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
+    //        //    GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
+    //        //else
+    //        //    GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+
+
+    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero; // A* handles movement via MoveTowards
+
+    //        //else //Stop if we are not aggroed or wandering
+    //        //GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+    //    }
+    //    // if this is a leader, then it will only move around with A*
+    //    else
+    //    {
+    //        // convert our movement target location from grid to world space
+    //        Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
+
+    //        // This is how it moves:
+    //        // Everything before just changes it's rotation
+    //        // Then at the end of it's update it just moves forward whatever way it's facing
+    //        //Move at designated velocity
+    //        //if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
+    //        //    GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
+    //        //else //Stop if we are not aggroed or wandering
+    //        //    GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+
+    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+    //    }
+    //}
 
 
     //Not using a normal getter and setter so that these calls are more explicit
@@ -232,7 +337,7 @@ public class EnemyLogic : MonoBehaviour
             return;
 
         //Find the player
-        var player = GameObject.Find("Player(Clone)");
+        var player = GameObject.Find("Flag");
         if (player == null)
             return;
         Player = player.transform;
@@ -400,7 +505,18 @@ public class EnemyLogic : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-       //Gizmos.color = Color.yellow;
-       //Gizmos.DrawWireSphere(temp, 0.5f);
+        if (path == null || path.Count == 0) return;
+
+        Gizmos.color = Color.green;
+        for (int i = 0; i < path.Count - 1; i++)
+            Gizmos.DrawLine(path[i], path[i + 1]);
+
+        Gizmos.color = Color.red;
+        if (waypointIndex < path.Count)
+            Gizmos.DrawSphere(path[waypointIndex], 0.15f);
     }
+
+
 }
+
+

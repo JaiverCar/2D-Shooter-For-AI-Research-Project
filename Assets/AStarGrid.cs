@@ -14,26 +14,29 @@ public class Node
 
     public Vector2 pos => new Vector2(gridX, gridY);
 
-    public int gCost, hCost;
+    public float gCost, hCost;
     public Node parent;
-    public int fCost => gCost + hCost;
+    public float fCost => gCost + hCost;
 
     public enum SearchStatus
     { 
         onOpen = 0,
-        onClosed = 1
+        onClosed = 1,
+        none = 2
     }
 
     public SearchStatus status;
 
-    internal class nodeEdge
+    public int iteration = 1;
+
+    public class nodeEdge
     {
-        Vector2 pos;
-        int cost;
+        public Vector2 pos;
+        public float cost;
     }
 
 
-    public List<Node> neighbors;
+    public List<nodeEdge> neighbors = new List<nodeEdge>();
 
     public void getNeighbors()
     {
@@ -51,7 +54,7 @@ public class Node
             bool diagonal = (math.abs(dirR[i]) == 1 && math.abs(dirC[i]) == 1);
             float cost = diagonal ? 1.41421356237f : 1.0f;
 
-            nodeEdge edge;
+            nodeEdge edge = new nodeEdge();
             edge.pos = np;
             edge.cost = cost;
 
@@ -66,7 +69,7 @@ public class Node
         this.worldPosition = worldPos;
         this.gridX = gridX;
         this.gridY = gridY;
-        this.status = SearchStatus.onOpen;
+        this.status = SearchStatus.none;
     }
 
 
@@ -102,7 +105,7 @@ public class AStarGrid : MonoBehaviour
 
     Node[,] grid;
     float nodeDiameter;
-    int gridSizeX, gridSizeY;
+    public int gridSizeX, gridSizeY;
 
     void Awake()
     {
@@ -111,6 +114,7 @@ public class AStarGrid : MonoBehaviour
         gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
         gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
         BuildGrid();
+        GetAllNeighbors();
     }
 
     void BuildGrid()
@@ -127,18 +131,26 @@ public class AStarGrid : MonoBehaviour
                     + Vector2.right * (x * nodeDiameter + nodeRadius)
                     + Vector2.up * (y * nodeDiameter + nodeRadius);
 
-                bool walkable = Physics2D.OverlapCircle(worldPoint, nodeRadius * 0.9f, obstacleLayer) == null;
+                bool walkable = Physics2D.OverlapBox(worldPoint, Vector2.one * nodeRadius * 1.5f, 0f, obstacleLayer) == null;
                 grid[x, y] = new Node(walkable, worldPoint, x, y);
             }
     }
 
+    void GetAllNeighbors()
+    {
+        foreach(Node n in grid)
+        {
+            n.getNeighbors();
+        }
+    }
+
     public bool IsValidGridPos(Vector2 pos)
     {
-        if (!(pos.x <= gridSizeX) && !(pos.x >= 0))
+        if (pos.x >= gridSizeX || pos.x < 0)
         {
             return false;
         }
-        if (!(pos.y <= gridSizeY) && !(pos.y >= 0))
+        if (pos.y >= gridSizeY || pos.y < 0)
         {
             return false;
         }
@@ -153,6 +165,16 @@ public class AStarGrid : MonoBehaviour
         int x = Mathf.RoundToInt((gridSizeX - 1) * percentX);
         int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
         return grid[x, y];
+    }
+
+    public bool IsWalkable(int x, int y)
+    {
+        return grid[x, y].walkable;
+    }
+
+    public Node GridGet(Vector2 pos)
+    {
+        return grid[(int)pos.x, (int)pos.y];
     }
 
     public List<Node> GetNeighbors(Node node)
@@ -186,13 +208,14 @@ public class AStarGrid : MonoBehaviour
                            - Vector2.up * gridWorldSize.y / 2;
 
         for (int x = 0; x < sizeX; x++)
+        {
             for (int y = 0; y < sizeY; y++)
             {
                 Vector2 worldPoint = bottomLeft
                     + Vector2.right * (x * nodeDiameter + nodeRadius)
                     + Vector2.up * (y * nodeDiameter + nodeRadius);
 
-                bool walkable = Physics2D.OverlapCircle(worldPoint, nodeRadius * 0.9f, obstacleLayer) == null;
+                bool walkable = Physics2D.OverlapBox(worldPoint, Vector2.one * nodeRadius * 1.5f, 0f, obstacleLayer) == null;
 
                 Gizmos.color = walkable
                     ? new Color(0f, 1f, 0f, 0.15f)
@@ -200,5 +223,31 @@ public class AStarGrid : MonoBehaviour
 
                 Gizmos.DrawCube(worldPoint, Vector2.one * (nodeDiameter - 0.05f));
             }
+
+        }
+
+        if (grid != null)
+        {
+            foreach (Node n in grid)
+            {
+                if (!n.walkable) continue;
+                bool nextToWall = false;
+                for (int dx = -1; dx <= 1; dx++)
+                    for (int dy = -1; dy <= 1; dy++)
+                    {
+                        if (dx == 0 && dy == 0) continue;
+                        int cx = n.gridX + dx;
+                        int cy = n.gridY + dy;
+                        if (cx >= 0 && cx < gridSizeX && cy >= 0 && cy < gridSizeY)
+                            if (!grid[cx, cy].walkable)
+                                nextToWall = true;
+                    }
+                if (nextToWall)
+                {
+                    Gizmos.color = Color.cyan;
+                    Gizmos.DrawSphere(n.worldPosition, 0.1f);
+                }
+            }
         }
     }
+}
