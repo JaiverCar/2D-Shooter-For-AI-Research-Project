@@ -43,6 +43,14 @@ public class EnemyLogic : MonoBehaviour
     public float DropChance = 0.35f; //35% chance
 
     //////////////////////////////////////////////////////////////////////////
+    [Header("Vision-Based Aggro:")]
+    [Tooltip("Use vision layer for aggro detection instead of simple distance")]
+    public bool useVisionBasedAggro = true;
+    [Tooltip("Vision threshold - player must be at least this visible to trigger aggro (0-1)")]
+    [Range(0f, 1f)]
+    public float visionAggroThreshold = 0.1f;
+
+    //////////////////////////////////////////////////////////////////////////
     [Header("Variables for flocking:")]
     [SerializeField]
     private float echoRadius = 0;
@@ -102,6 +110,7 @@ public class EnemyLogic : MonoBehaviour
     Vector2 lastMoveDirection = Vector2.zero;
     float directionBlendSpeed = 10.0f; // How fast to blend between old and new direction
     float repathTimer = 0.0f;
+
     void Start()
     {
         //Set the minimum range at which aggro will be dropped to 150% of the aggro range
@@ -115,6 +124,21 @@ public class EnemyLogic : MonoBehaviour
 
         GetPlayerReference();
         GetFlagReference();
+
+        // Register this enemy with TerrainAnalysis for vision tracking
+        if (TerrainAnalysis.Instance != null)
+        {
+            TerrainAnalysis.Instance.RegisterEnemy(transform);
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Unregister this enemy when it's destroyed
+        if (TerrainAnalysis.Instance != null)
+        {
+            TerrainAnalysis.Instance.UnregisterEnemy(transform);
+        }
     }
 
 
@@ -235,18 +259,23 @@ public class EnemyLogic : MonoBehaviour
 
         //      //If player is within aggro range, chase it!
         var playerDir = (Player.position - transform.position);
-        if (playerDir.magnitude <= AggroRange)
+
+        // Use vision-based aggro if enabled
+
+        if (CanSeePlayerVision())
         {
             if (Aggroed == false)
             {
                 Wander = false;
                 Timer = 0;
+                Debug.Log($"{gameObject.name} detected player via VISION!");
             }
             SetAggroState(true);
         }
-        else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
+        else
+        {
             SetAggroState(false);
-
+        }
 
         // if this is not a leader it will be affected by the flocking logic
         if (isLeader == false)
@@ -373,6 +402,34 @@ public class EnemyLogic : MonoBehaviour
         //If this range is less than 150% of the max weapon range, use that instead
         if (MinDeaggroRange < maxBulletRange * 1.5f)
             MinDeaggroRange = maxBulletRange * 1.5f;
+    }
+
+    // Check if this enemy can see the player using vision layer
+    bool CanSeePlayerVision()
+    {
+        // Safety checks
+        if (Player == null || TerrainAnalysis.Instance == null || AStarGrid.Instance == null)
+            return false;
+
+        // Get this enemy's vision layer
+        LayerVisualization visionLayer = TerrainAnalysis.Instance.GetEnemyVisionLayer(transform);
+        if (visionLayer == null || visionLayer.layer == null)
+            return false;
+
+        // Convert player world position to grid coordinates
+        Vector2 playerWorldPos = new Vector2(Player.position.x, Player.position.y);
+        Node playerNode = AStarGrid.Instance.NodeFromWorldPoint(playerWorldPos);
+
+        // Check if player position is valid on the grid
+        if (!AStarGrid.Instance.IsValidGridPos(new Vector2(playerNode.gridX, playerNode.gridY)))
+            return false;
+
+        // Get the vision value at the player's grid position
+        // Note: layer.GetValue takes (row, col) which is (gridY, gridX)
+        float visionValue = visionLayer.layer.GetValue(playerNode.gridY, playerNode.gridX);
+
+        // Player is visible if vision value exceeds threshold
+        return visionValue >= visionAggroThreshold;
     }
 
     //Update the wandering state

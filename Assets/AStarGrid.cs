@@ -176,6 +176,10 @@ public class AStarGrid : MonoBehaviour
     {
         return grid[(int)pos.x, (int)pos.y];
     }
+    public Node GridGet(int row, int col)
+    {
+        return grid[col, row];
+    }
 
     public List<Node> GetNeighbors(Node node)
     {
