@@ -21,7 +21,7 @@ public class EnemyLogic : MonoBehaviour
     //////////////////////////////////////////////////////////////////////////
     // DESIGNER ADJUSTABLE VALUES
     //////////////////////////////////////////////////////////////////////////
-
+    
     // bool to check if this is a Leader
     public bool isLeader = false;
     // bool to check if this is a Grunt
@@ -30,7 +30,7 @@ public class EnemyLogic : MonoBehaviour
     // tile to move to
     public Vector2 movementTargetTile;
     //Movement speed
-    public float Speed = 10.0f;
+    public float Speed = 100.0f;
     //Starting health
     public int StartingHealth = 1;
     //Distance at which the enemy will attack
@@ -81,10 +81,13 @@ public class EnemyLogic : MonoBehaviour
     //Track the player for aggro and targeting purposes
     [HideInInspector]
     public Transform Player = null;
-    public float repathInterval = 1.5f;
+    public float repathInterval = 0.2f;
 
     List<Vector2> path;
     int waypointIndex;
+    Vector2 currTarget;
+    public Transform Flag = null;
+    public Transform AstarTarget = null;
 
     //Don't do anything because a cinematic occuring
     [HideInInspector]
@@ -94,27 +97,11 @@ public class EnemyLogic : MonoBehaviour
 
     // Start is called before the first frame update
 
-    IEnumerator RepathLoop()
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(repathInterval);
-
-            if (Player != null)
-            {
-                // only repath if we've reached our current waypoint
-                if (path == null || waypointIndex >= path.Count)
-                {
-                    List<Vector2> newPath = Pathfinder.Instance.FindPath(transform.position, Player.position);
-                    if (newPath != null && newPath.Count > 0)
-                    {
-                        path = newPath;
-                        waypointIndex = 0;
-                    }
-                }
-            }
-        }
-    }
+    Transform lastTarget;
+    Vector2 lastTargetPos;
+    Vector2 lastMoveDirection = Vector2.zero;
+    float directionBlendSpeed = 10.0f; // How fast to blend between old and new direction
+    float repathTimer = 0.0f;
     void Start()
     {
         //Set the minimum range at which aggro will be dropped to 150% of the aggro range
@@ -127,189 +114,200 @@ public class EnemyLogic : MonoBehaviour
         Health = StartingHealth;
 
         GetPlayerReference();
-
-        StartCoroutine(RepathLoop());
+        GetFlagReference();
     }
 
 
     // FOR TESTING-------------------------------------
     Vector3 temp = Vector3.zero;
 
-
-
-
-
-    void FixedUpdate()
+    // Update is called once per frame
+    void Update()
     {
+
+
+        //Don't do anything if in cinematic mode
+        if (CinematicMode)
+        {
+            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            return;
+        }
+
+        // Check to see if we have a reference to the player and flag
+        GetFlagReference();
+        GetPlayerReference();
+
+        // Determine the desired target based on aggro state
+        Transform desiredTarget = (Aggroed == true && Wander == false) ? Player : Flag;
+
+        // Only update target if it actually changed
+        if (AstarTarget != desiredTarget)
+        {
+            Debug.Log(gameObject.name + " switching to " + desiredTarget.name);
+            AstarTarget = desiredTarget;
+        }
+
+        // Pathfinding logic - check if we need to repath (AI HELPED HERE)
+        repathTimer += Time.deltaTime;
+
+        bool targetChanged = lastTarget != AstarTarget;
+        bool targetMoved = AstarTarget != null && Vector2.Distance(AstarTarget.position, lastTargetPos) > 0.3f;
+
+        // Check if we've reached the current waypoint (or path is invalid)
+        bool atWaypoint = path == null || waypointIndex >= path.Count || 
+                          Vector2.Distance(transform.position, path[waypointIndex]) < 0.16f;
+
+        // Check if we're at the end of the path completely
+        bool atEndOfPath = path != null && waypointIndex >= path.Count;
+
+        // START AI HELP
+
+        // Repath if:
+        // - Target changed (immediate aggro response)
+        // - At end of path and timer elapsed (keep following)
+        // - Timer elapsed AND target moved AND at a waypoint (smooth tracking)
+        if (AstarTarget != null && 
+            (targetChanged || 
+             (atEndOfPath && repathTimer >= repathInterval) ||
+             (repathTimer >= repathInterval && targetMoved && atWaypoint)))
+        {
+            lastTarget = AstarTarget;
+            lastTargetPos = AstarTarget.position;
+
+            List<Vector2> newPath = Pathfinder.Instance.FindPath(transform.position, AstarTarget.position);
+            if (newPath != null && newPath.Count > 1)
+            {
+                newPath.RemoveAt(0);
+                path = newPath;
+                waypointIndex = 0;
+            }
+
+            repathTimer = 0.0f;
+        }
+
+        // END AI HELP
+
+
+        // if the path is empty or there we are at the end of it, stop moving (ASTAR)
         if (path == null || waypointIndex >= path.Count)
         {
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             return;
         }
 
-         advancedThisFrame = false;
+        // set the advanced flag to false and update current move target (ASTAR)
+        advancedThisFrame = false;
+        currTarget = path[waypointIndex];
 
-        Vector2 target = path[waypointIndex];
-        Vector2 dir = (target - GetComponent<Rigidbody2D>().position).normalized;
-        transform.up = dir;
-        GetComponent<Rigidbody2D>().velocity = dir * Speed;
 
-        float dist = Vector2.Distance(GetComponent<Rigidbody2D>().position, target);
-        if (dist <= 0.1f && !advancedThisFrame)
+        if (Player == null || !Player.gameObject.activeInHierarchy)
         {
-            GetComponent<Rigidbody2D>().MovePosition(target);
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            waypointIndex++;
-            advancedThisFrame = true;
+            return;
         }
 
+        if (path == null || waypointIndex >= path.Count)
+        {
+            // fall back to wandering
+            WanderingUpdate();
+            if (Wander)
+            {
+                GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
+            }
+            else
+            {
+                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            }
+            return;
+        }
+
+        //No reference to an active player, nothing to chase
+        if (Player == null || !Player.gameObject.activeInHierarchy)
+        {
+            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            SetAggroState(false);
+            return;
+        }
+
+        //////// work zone bellow, hard hats remaining: 1
+
+        //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
+
+        //      //If player is within aggro range, chase it!
+        var playerDir = (Player.position - transform.position);
+        if (playerDir.magnitude <= AggroRange)
+        {
+            if (Aggroed == false)
+            {
+                Wander = false;
+                Timer = 0;
+            }
+            SetAggroState(true);
+        }
+        else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
+            SetAggroState(false);
+
+
+        // if this is not a leader it will be affected by the flocking logic
+        if (isLeader == false)
+        {
+            Vector3 movementTargetLocation = currTarget;
+
+            Vector3 flockDir = GetComponent<FlockingLogic>().GetDirection();
+            Vector2 astarDir = (currTarget - (Vector2)transform.position).normalized;
+            Vector2 blendedDir = (astarDir + (Vector2)flockDir * 1.5f).normalized; // Increase from 0.3 to 1.5
+
+
+            moveDir = blendedDir;
+
+            if (HasReachedMovementTarget(movementTargetLocation) == false)
+            {
+                if (blendedDir.magnitude > 0.01f)
+                    transform.up = SnapVectorToGrid(blendedDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+
+                GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
+            }
+            else
+            {
+                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                if (!advancedThisFrame)
+                {
+                    waypointIndex++;
+                    advancedThisFrame = true;
+                }
+            }
+        }
+        // if this is a leader, then it will only move around with A*
+        else
+        {
+            Vector3 movementTargetLocation = currTarget;
+            Vector2 astarDir = (currTarget - (Vector2)transform.position).normalized;
+
+            // Smoothly blend from last direction to new direction to prevent flipping
+            if (lastMoveDirection != Vector2.zero)
+            {
+                astarDir = Vector2.Lerp(lastMoveDirection, astarDir, Time.deltaTime * directionBlendSpeed);
+            }
+            lastMoveDirection = astarDir;
+
+            if (HasReachedMovementTarget(movementTargetLocation) == false)
+            {
+                if (astarDir.magnitude > 0.01f)
+                    transform.up = SnapVectorToGrid(astarDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
+
+                GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
+            }
+            else
+            {
+                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                if (!advancedThisFrame)
+                {
+                    waypointIndex++;
+                    advancedThisFrame = true;
+                }
+            }
+        }
     }
-
-
-
-
-    // Update is called once per frame
-    //void Update()
-    //{
-    //    //Don't do anything if in cinematic mode
-    //    if (CinematicMode)
-    //    {
-    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-    //        return;
-    //    }
-
-    //    //Check to see if we have a reference to the player
-    //    GetPlayerReference();
-
-    //    if (Player == null || !Player.gameObject.activeInHierarchy)
-    //    {
-    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-    //        return;
-    //    }
-
-    //    if (path == null || waypointIndex >= path.Count)
-    //    {
-    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-    //        return;
-    //    }
-
-    //    Vector2 target = path[waypointIndex];
-    //    float distToWaypoint = Vector2.Distance(transform.position, target);
-
-    //    if (distToWaypoint > 0.1f)
-    //    {
-    //        // Still travelling to this waypoint, keep moving
-    //        Vector2 dir = (target - (Vector2)transform.position).normalized;
-    //        transform.up = dir;
-    //        GetComponent<Rigidbody2D>().velocity = dir * Speed;
-    //    }
-    //    else
-    //    {
-    //        // Reached this waypoint, snap to it and advance
-    //        GetComponent<Rigidbody2D>().MovePosition(target);
-    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-    //        waypointIndex++;
-    //    }
-
-    //    //Increment the timers
-    //    Timer += Time.deltaTime;
-    //    MoveVerticalTimer -= Time.deltaTime;
-    //    MoveHorizontalTimer -= Time.deltaTime;
-
-    //    //Should we wander in a random direction?
-    //    //WanderingUpdate(); // disabled wander until we have A* implemented ----------------- 
-
-    //    //No reference to an active player, nothing to chase
-    //    if (Player == null || !Player.gameObject.activeInHierarchy)
-    //    {
-    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-    //        SetAggroState(false);
-    //        return;
-    //    }
-
-    //    //////// work zone bellow, hard hats remaining: 1
-
-    //    //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
-
-    //    //      //If player is within aggro range, chase it!
-    //    //      var playerDir = (Player.position - transform.position);
-    //    //      if (playerDir.magnitude <= AggroRange)
-    //    //{
-    //    //	if (Aggroed == false)
-    //    //	{
-    //    //		Wander = false;
-    //    //		Timer = 0;
-    //    //	}
-    //    //          SetAggroState(true);
-    //    //      }
-    //    //      else if (playerDir.magnitude > MinDeaggroRange) //Too far away, so drop aggro
-    //    //          SetAggroState(false);
-
-    //    //      //Rotate to face the player (unless we are wandering)
-    //    //      if (Aggroed == true && Wander == false)
-    //    //      {
-    //    //          transform.up = SnapVectorToGrid(playerDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
-    //    //                                       // ^ replace by the direction of the tile they are moving twoards 
-    //    //      }
-    //    //      //Note that we account for whether the enemy is up against a wall so we don't get stuck
-
-    //    //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
-
-    //    // if this is not a leader it will be affected by the flocking logic
-    //    if (isLeader == false)
-    //    {
-    //        //movementTargetTile = GameManager.Instance.ourFlag.position;
-
-    //        // convert our movement target location from grid to world space
-    //        Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
-
-    //        //temp = GetComponent<FlockingLogic>().GetGoal();//movementTargetLocation = GetComponent<FlockingLogic>().GetGoal();
-
-    //        // get the movement direction
-    //        var movementDir = (movementTargetLocation - transform.position);
-    //        //var movementDir = GetComponent<FlockingLogic>().GetDirection();
-
-    //        //if (movementDir != Vector3.zero)
-    //        //{
-    //        //    moveDir = movementDir;
-    //        //}
-
-    //        transform.up = SnapVectorToGrid(movementDir, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
-
-    //        // This is how it moves:
-    //        // Everything before just changes it's rotation
-    //        // Then at the end of it's update it just moves forward whatever way it's facing
-    //        //Move at designated velocity
-
-    //        //if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
-    //        //    GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
-    //        //else
-    //        //    GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-
-
-    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero; // A* handles movement via MoveTowards
-
-    //        //else //Stop if we are not aggroed or wandering
-    //        //GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-    //    }
-    //    // if this is a leader, then it will only move around with A*
-    //    else
-    //    {
-    //        // convert our movement target location from grid to world space
-    //        Vector3 movementTargetLocation = new Vector3(movementTargetTile.x, movementTargetTile.y, 0.0f);
-
-    //        // This is how it moves:
-    //        // Everything before just changes it's rotation
-    //        // Then at the end of it's update it just moves forward whatever way it's facing
-    //        //Move at designated velocity
-    //        //if (HasReachedMovementTarget(movementTargetLocation) == false) // this is the logic that handled movement if it had aggro or needed to wander ----> if (Aggroed == true || Wander == true)
-    //        //    GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
-    //        //else //Stop if we are not aggroed or wandering
-    //        //    GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-
-    //        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-    //    }
-    //}
 
 
     //Not using a normal getter and setter so that these calls are more explicit
@@ -330,6 +328,19 @@ public class EnemyLogic : MonoBehaviour
     }
 
     //Get a reference to the player
+    void GetFlagReference()
+    {
+        //Already tracking the player
+        if (Flag != null)
+            return;
+
+        //Find the player
+        var flag = GameObject.Find("Flag");
+        if (flag == null)
+            return;
+        Flag = flag.transform;
+    }
+
     void GetPlayerReference()
     {
         //Already tracking the player
@@ -337,7 +348,7 @@ public class EnemyLogic : MonoBehaviour
             return;
 
         //Find the player
-        var player = GameObject.Find("Flag");
+        var player = GameObject.Find("Player(Clone)");
         if (player == null)
             return;
         Player = player.transform;
@@ -466,7 +477,7 @@ public class EnemyLogic : MonoBehaviour
 
     private bool HasReachedMovementTarget(Vector3 movementTargetLocation)
     {
-        if (Vector3.Distance(movementTargetLocation, transform.position) < 0.02f)
+        if (Vector3.Distance(movementTargetLocation, transform.position) < 0.15f)
         {
             return true;
         }
@@ -514,6 +525,22 @@ public class EnemyLogic : MonoBehaviour
         Gizmos.color = Color.red;
         if (waypointIndex < path.Count)
             Gizmos.DrawSphere(path[waypointIndex], 0.15f);
+
+
+        if (path == null || path.Count == 0) return;
+
+        for (int i = 0; i < path.Count; i++)
+        {
+            // color goes from red at start to green at end
+            Gizmos.color = Color.Lerp(Color.red, Color.green, (float)i / path.Count);
+            Gizmos.DrawSphere(path[i], 0.1f);
+
+            if (i < path.Count - 1)
+                Gizmos.DrawLine(path[i], path[i + 1]);
+
+            // draw the index number
+            UnityEditor.Handles.Label(path[i], i.ToString());
+        }
     }
 
 
