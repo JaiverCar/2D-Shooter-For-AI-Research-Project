@@ -9,20 +9,23 @@ public class FlockController : MonoBehaviour
     [Range(0.5f, 15.0f)]
     private float currentEchoRadius = 15.0f;
     [SerializeField]
-    [Range(0.0f, 100.0f)]
-    private float cohesionStrength = 0.0f;
-    [SerializeField]
     [Range(0.0f, 1.0f)]
-    private float separationStrength = 0.5f;
+    private float separationRange = 0.5f;
     [SerializeField]
-    [Range(0.0f, 100.0f)]
-    private float alignmentStrength = 0.0f;
+    [Range(0.0f, 10.0f)]
+    private float cohesionWeight = 0.0f;
     [SerializeField]
-    [Range(0.0f, 100.0f)]
-    private float wanderStrength = 0.0f;
+    [Range(0.0f, 10.0f)]
+    private float separationWeight = 0.0f;
     [SerializeField]
-    [Range(0.0f, 100.0f)]
-    private float tetherStrength = 1.0f;
+    [Range(0.0f, 10.0f)]
+    private float alignmentWeight = 0.0f;
+    //[SerializeField]
+    //[Range(0.0f, 100.0f)]
+    //private float wanderStrength = 0.0f;
+    //[SerializeField]
+    //[Range(0.0f, 100.0f)]
+    //private float tetherStrength = 1.0f;
 
 
     // Start is called before the first frame update
@@ -39,7 +42,7 @@ public class FlockController : MonoBehaviour
         foreach (FlockingLogic enemy in enemies)
         {
             enemy.SetEchoRadius(currentEchoRadius);
-            enemy.SetSeparationRadius(separationStrength * currentEchoRadius);
+            enemy.SetSeparationRadius(separationRange * currentEchoRadius);
         }
     }
 
@@ -53,24 +56,24 @@ public class FlockController : MonoBehaviour
         currentEchoRadius = echoRadiusSlider.value;
     }
 
-    public float GetCohesionStrength()
+    public float GetCohesionWeight()
     {
-        return cohesionStrength;
+        return cohesionWeight;
     }
-    public float GetSeparationStrength()
+    public float GetSeparationWeight()
     {
-        return separationStrength;
+        return separationWeight;
     }
-    public float GetAlignmentStrength()
+    public float GetAlignmentWeight()
     {
-        return alignmentStrength;
+        return alignmentWeight;
     }
-    public float GetWanderStrength()
-    {
-        return wanderStrength;
-    }
-    public float GetTetherStrength()
-    {
-        return tetherStrength;
-    }
+    //public float GetWanderStrength()
+    //{
+    //    return wanderStrength;
+    //}
+    //public float GetTetherStrength()
+    //{
+    //    return tetherStrength;
+    //}
 }
