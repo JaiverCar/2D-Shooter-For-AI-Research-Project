@@ -317,4 +317,5 @@ public class PCG : MonoBehaviour
         Prefabs.Add("cinematicanchor", Resources.Load<GameObject>("Prefabs/Camera/CinematicAnchor"));
         Prefabs.Add("uicanvas", Resources.Load<GameObject>("Prefabs/Player/UICanvas"));
     }
+
 }
