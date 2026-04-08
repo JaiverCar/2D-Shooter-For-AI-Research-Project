@@ -6,10 +6,13 @@ using UnityEngine.UI;
 public class FlockController : MonoBehaviour
 {
     [SerializeField]
+    [Range(0.5f, 15.0f)]
+    private float currentEchoRadius = 15.0f;
+    [SerializeField]
     [Range(0.0f, 100.0f)]
     private float cohesionStrength = 0.0f;
     [SerializeField]
-    [Range(1.0f, 99.0f)]
+    [Range(0.0f, 1.0f)]
     private float separationStrength = 0.5f;
     [SerializeField]
     [Range(0.0f, 100.0f)]
@@ -31,7 +34,13 @@ public class FlockController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        var enemies = FindObjectsOfType<FlockingLogic>();
+
+        foreach (FlockingLogic enemy in enemies)
+        {
+            enemy.SetEchoRadius(currentEchoRadius);
+            enemy.SetSeparationRadius(separationStrength * currentEchoRadius);
+        }
     }
 
     public void UpdateEchoRadius()
@@ -40,11 +49,8 @@ public class FlockController : MonoBehaviour
 
         // get all enemies that have the FlockingLogic script
         var enemies = FindObjectsOfType<FlockingLogic>();
-        
-        foreach (FlockingLogic enemy in enemies)
-        {
-            enemy.SetEchoRadius(echoRadiusSlider.value);
-        }
+
+        currentEchoRadius = echoRadiusSlider.value;
     }
 
     public float GetCohesionStrength()
