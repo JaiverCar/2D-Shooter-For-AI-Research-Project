@@ -354,5 +354,21 @@ public class FlockingLogic : MonoBehaviour
             Gizmos.DrawLine(prevPoint, newPoint);
             prevPoint = newPoint;
         }
+
+        Gizmos.color = Color.red;
+        prevPoint = transform.position + new Vector3(separationRadius, 0, 0);
+        for (int i = 1; i <= segments; i++)
+        {
+            float angle = Mathf.Deg2Rad * angleStep * i;
+
+            Vector3 newPoint = transform.position + new Vector3(
+                Mathf.Cos(angle) * separationRadius,
+                Mathf.Sin(angle) * separationRadius,
+                0
+            );
+
+            Gizmos.DrawLine(prevPoint, newPoint);
+            prevPoint = newPoint;
+        }
     }
 }
