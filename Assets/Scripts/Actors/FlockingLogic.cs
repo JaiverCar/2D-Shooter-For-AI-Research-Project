@@ -18,6 +18,8 @@ public class FlockingLogic : MonoBehaviour
 
     // a referance to this enemy's echo radius
     private float echoRadius = 0;
+    // a referance to this enemy's avoidance radius
+    private float separationRadius = 0;
 
     // a referance to our leaders position
     public Vector3 leaderPos = Vector3.zero;
@@ -44,9 +46,6 @@ public class FlockingLogic : MonoBehaviour
 
         // this ref should never be null
         Debug.Assert(thisEnemy != null);
-
-        // get the "echo" radius from the enemy we're attached to
-        echoRadius = thisEnemy.GetEchoRadius();
 
         // the echo radius should always be greater than zero
         Debug.Assert(echoRadius > 0);
@@ -325,6 +324,11 @@ public class FlockingLogic : MonoBehaviour
     public void SetEchoRadius(float newRadius)
     {
         echoRadius = newRadius;
+    }
+
+    public void SetSeparationRadius(float newRadius)
+    {
+        separationRadius = newRadius;
     }
 
     private float segments = 60.0f;
