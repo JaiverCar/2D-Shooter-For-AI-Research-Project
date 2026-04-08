@@ -13,19 +13,19 @@ public class FlockController : MonoBehaviour
     private float separationRange = 0.5f;
     [SerializeField]
     [Range(0.0f, 10.0f)]
-    private float cohesionWeight = 0.0f;
+    private float cohesionWeight = 1.0f;
     [SerializeField]
     [Range(0.0f, 10.0f)]
-    private float separationWeight = 0.0f;
+    private float separationWeight = 1.0f;
     [SerializeField]
     [Range(0.0f, 10.0f)]
-    private float alignmentWeight = 0.0f;
+    private float alignmentWeight = 1.0f;
+    [SerializeField]
+    [Range(0.0f, 10.0f)]
+    private float tetherWeight = 1.0f;
     //[SerializeField]
     //[Range(0.0f, 100.0f)]
     //private float wanderStrength = 0.0f;
-    //[SerializeField]
-    //[Range(0.0f, 100.0f)]
-    //private float tetherStrength = 1.0f;
 
 
     // Start is called before the first frame update
@@ -68,12 +68,12 @@ public class FlockController : MonoBehaviour
     {
         return alignmentWeight;
     }
+    public float GetTetherWeight()
+    {
+        return tetherWeight;
+    }
     //public float GetWanderStrength()
     //{
     //    return wanderStrength;
-    //}
-    //public float GetTetherStrength()
-    //{
-    //    return tetherStrength;
     //}
 }

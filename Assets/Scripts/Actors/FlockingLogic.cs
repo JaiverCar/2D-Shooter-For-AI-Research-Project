@@ -33,10 +33,14 @@ public class FlockingLogic : MonoBehaviour
     // to save a reference to our flock controller
     private FlockController flockController;
 
-    // the goal point that the enemy will try to steer to
-    private Vector3 goal = Vector3.zero;
-
+    // the new direction for the enemy to face after all the flock calculations
     private Vector3 direction = Vector3.zero;
+
+    // local variable used to smooth cohesion
+    private Vector3 smoother;
+    
+    // the rate of our smoothing of cohesion
+    private float smoothRate = 0.5f;
 
     // Start is called before the first frame update
     void Start()
@@ -109,6 +113,14 @@ public class FlockingLogic : MonoBehaviour
         {
             // just keep going in the same direction
             direction = transform.up;
+
+            // UNLESS we have a leader
+            if (thisEnemy.HasLeader())
+            {
+                //In which case we still want to do our tether 
+                direction = DoTether() * flockController.GetTetherWeight();
+            }
+
             return;
         }
 
@@ -117,134 +129,15 @@ public class FlockingLogic : MonoBehaviour
 
         Vector3 weightedCohesion = DoCohesion() * flockController.GetCohesionWeight(); 
         Vector3 weightedSeparation = DoSeparation() * flockController.GetSeparationWeight(); 
-        Vector3 weightedAlignment = DoAlignment() * flockController.GetAlignmentWeight(); 
+        Vector3 weightedAlignment = DoAlignment() * flockController.GetAlignmentWeight();
+        Vector3 weightedTether = DoTether() * flockController.GetTetherWeight();
 
-        direction += weightedCohesion + weightedSeparation + weightedAlignment;
-
-        //-------------------------------------------------------------------
-        //// zero out the direction vector to contruct it again
-        //direction = Vector3.zero;
-
-
-        //// zero out the gaol vector to contruct it again
-        //goal = Vector3.zero;
-
-        //// get the value of all our modifiers
-        //float tStrenght = flockController.GetTetherStrength(); // tether strength
-        //float sStrenght = flockController.GetSeparationStrength(); // separation strength
-        //float cStrenght = flockController.GetCohesionStrength(); // cohesion strength
-        //float aStrenght = flockController.GetAlignmentStrength(); // alignment strength
-
-        //// if this enemy has NO leader or NO group
-        //if (thisEnemy.HasLeader() == false && hasGroup == false)
-        //{
-        //    // just wander
-        //}
-        //// if this enemy has a leader, but NO group 
-        //if (thisEnemy.HasLeader() == true && hasGroup == false)
-        //{
-        //    // do wander and do tether
-
-        //    Vector3 tDir = DoTether(); // the direction our tether is pulling us in
-
-        //    direction += (tDir * tStrenght);
-        //}
-        //// if this enemy has NO leader, but has a group
-        //if (thisEnemy.HasLeader() == false && hasGroup == true)
-        //{
-        //    // do wander, cohesion, separation, and alignment BUT NOT tether
-
-        //    Vector3 sPos = DoSeparation(); // the direction to move away from our allies 
-
-        //    Vector3 cPos = DoCohesion(); // the position to move towards our allies
-
-        //    goal += (sPos * sStrenght) + (cPos * cStrenght);
-
-        //    //Vector3 aDir = DoAlignment(); // the direction to turn to align with our nearby allies
-        //    //direction += (aDir * aStrenght);
-
-        //    // testing
-        //    if (Vector3.Distance(cPos, ourPos) > 10.0f)
-        //    {
-        //        Vector3 cDir = (cPos - ourPos).normalized;
-
-        //        direction += cDir;
-        //    }
-        //    if (Vector3.Distance(sPos, ourPos) < 5.0f)
-        //    {
-        //        Vector3 sDir = (sPos - ourPos).normalized;
-
-        //        direction += sDir;
-        //    }
-        //    //direction += (sDir * sStrenght) + (cDir * cStrenght);
-        //}
-        //// if this enemy has a leader and a group
-        //if (thisEnemy.HasLeader() == true && hasGroup == true)
-        //{
-        //    // do wander, cohesion, separation, alignment, and tether
-
-        //    Vector3 sPos = DoSeparation(); // the direction to move away from our allies 
-
-        //    Vector3 cPos = DoCohesion(); // the position to move towards our allies
-
-        //    goal += (sPos * sStrenght) + (cPos * cStrenght);
-
-        //    //Vector3 aDir = DoAlignment(); // the direction to turn to align with our nearby allies
-        //    //direction += (aDir * aStrenght);
-
-        //    Vector3 tDir = DoTether(); // the direction our tether is pulling us in
-        //    direction += (tDir * tStrenght);
-
-        //    // testing
-        //    if (Vector3.Distance(cPos, ourPos) > 10.0f)
-        //    {
-        //        Vector3 cDir = (cPos - ourPos).normalized;
-
-        //        direction += cDir;
-        //    }
-        //    if (Vector3.Distance(sPos, ourPos) < 5.0f)
-        //    {
-        //        Vector3 sDir = (sPos - ourPos).normalized;
-
-        //        direction += sDir;
-        //    }
-        //    //direction += (sDir * sStrenght) + (cDir * cStrenght);
-        //}
-
-        //// get the weighted average of all our calcuated directions
-        ////direction /= (tStrenght + aStrenght + sStrenght +cStrenght);
-
-
-        //// get the weighted average of all our calcuated positions
-        //goal /= (sStrenght + cStrenght);
-        //-------------------------------------------------------------------
-
-        // too unstable
-
-        //Vector3 rPos = DoWander(); // a random position to wander to
-        //float rStrenght = flockController.GetWanderStrength();
-
-        //// reset the goal
-        //goal = Vector3.zero;
-
-        //// get a weighted averge of all the positions and directions we calculated
-        //goal += (cStrenght * cPos) + (sStrenght * sPos) + (rStrenght * rPos);//(aStrenght * aDir) + (tStrenght * tDir);
-        //goal /= (cStrenght + sStrenght + rStrenght); //+ tStrenght + aStrenght);
-
-        //direction = Vector3.zero;
-
-        //direction += (aStrenght * aDir) + (tStrenght * tDir);
-        //direction /=  (tStrenght + aStrenght);
+        direction += weightedCohesion + weightedSeparation + weightedAlignment + weightedTether;
     }
 
     public Vector3 GetDirection()
     {
         return direction;
-    }
-
-    public Vector3 GetGoal()
-    {
-        return goal;
     }
 
     // Cohesion gets enemies to come together 
@@ -263,6 +156,9 @@ public class FlockingLogic : MonoBehaviour
 
         // get the offset from this enemy
         sumPos -= transform.position;
+
+        // smooth from where this enemy is currently facing to where it should be facing for cohesion
+        sumPos = Vector3.SmoothDamp(transform.up, sumPos, ref smoother, smoothRate);
 
         return sumPos;
     }
@@ -307,7 +203,7 @@ public class FlockingLogic : MonoBehaviour
         // added up all the facing vectors from our nearbyAllies
         foreach (EnemyLogic ally in nearbyAllies)
         {
-            sumFacing += ally.transform.up; //ally.GetComponent<Rigidbody2D>().velocity.normalized;
+            sumFacing += ally.transform.up;
         }
 
         // divide to get the average
@@ -316,7 +212,7 @@ public class FlockingLogic : MonoBehaviour
         // normalize cause we only care about the direction
         sumFacing = sumFacing.normalized;
 
-        return sumFacing; //new Vector3(sumFacing.x, sumFacing.y, 0.0f);
+        return sumFacing;
     }
 
     // Wander gives them a random point to make their movements "wiggle"
@@ -333,7 +229,8 @@ public class FlockingLogic : MonoBehaviour
     // Tether makes sure that they stay within bounds of their leader
     private Vector3 DoTether()
     {
-        Vector3 leaderDirection = Vector3.zero;
+        // we do not set this to 0 so that enemies still move within the tether radius of their leaders
+        Vector3 leaderDirection = transform.up;
 
         // if the tether radius is set to 0 or anything less, it will not affect the movement of the enemy
         if (tetherRadius > 0)
@@ -366,9 +263,6 @@ public class FlockingLogic : MonoBehaviour
     private float segments = 60.0f;
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.green;
-        Gizmos.DrawRay(transform.position, GetComponent<Rigidbody2D>().velocity.normalized);
-
         Gizmos.color = Color.green;
         float angleStep = 360.0f / segments;
         Vector3 prevPoint = transform.position + new Vector3(echoRadius, 0, 0);

@@ -54,8 +54,6 @@ public class EnemyLogic : MonoBehaviour
     [Header("Variables for flocking:")]
     [SerializeField]
     private float echoRadius = 0;
-    // variable for saving our movement direction between updates
-    private Vector3 moveDir = Vector3.zero;
     // ref to this enemies leader
     private LeaderLogic leader;
 
@@ -141,9 +139,6 @@ public class EnemyLogic : MonoBehaviour
         }
     }
 
-
-    // FOR TESTING-------------------------------------
-    Vector3 temp = Vector3.zero;
 
     // Update is called once per frame
     void Update()
@@ -285,9 +280,6 @@ public class EnemyLogic : MonoBehaviour
             Vector3 flockDir = GetComponent<FlockingLogic>().GetDirection();
             Vector2 astarDir = (currTarget - (Vector2)transform.position).normalized;
             Vector2 blendedDir = (astarDir + (Vector2)flockDir * 1.5f).normalized; // Increase from 0.3 to 1.5
-
-
-            moveDir = blendedDir;
 
             if (HasReachedMovementTarget(movementTargetLocation) == false)
             {
