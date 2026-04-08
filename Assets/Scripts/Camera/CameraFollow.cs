@@ -30,7 +30,7 @@ public class CameraFollow : MonoBehaviour
     //Percentage to interpolate zooming in over one second
     private float ZoomInInterpolant = 0.1f;
     //Map mode zoom size
-    private float MapModeZoom = 100.0f; //This might need to be bigger if you have a large level
+    private float MapModeZoom = 35.0f; //This might need to be bigger if you have a large level
     //Speed for when manually moving the camera
     private float CameraMoveSpeed = 5.0f;
     //////////////////////////////////////////////////////////////////////////

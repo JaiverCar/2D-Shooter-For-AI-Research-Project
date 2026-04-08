@@ -149,10 +149,15 @@ MonoBehaviour:
   WanderInterval: 2
   WanderChance: 0.3
   DropChance: 0.1
+  useVisionBasedAggro: 1
+  visionAggroThreshold: 0.1
   echoRadius: 5
   Aggroed: 0
   Wander: 0
   Player: {fileID: 0}
+  repathInterval: 0.2
+  Flag: {fileID: 0}
+  AstarTarget: {fileID: 0}
   CinematicMode: 0
 --- !u!114 &8264996340615861227
 MonoBehaviour:
@@ -166,8 +171,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3aabeb6a3189a4e937c3e3fa76e90d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Weight: 1
-  Padding: 5
+  Weight: 0
+  Padding: 0
   Cinematic: 0
 --- !u!114 &4905951875147358756
 MonoBehaviour:
