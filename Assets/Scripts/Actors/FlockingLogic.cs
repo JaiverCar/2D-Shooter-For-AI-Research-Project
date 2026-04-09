@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.Rendering.DebugUI;
 using static UnityEngine.Rendering.HableCurve;
@@ -174,11 +175,41 @@ public class FlockingLogic : MonoBehaviour
         }
 
         direction += weightedCohesion + weightedSeparation + weightedAlignment + weightedTether;
+
+        DoSpeedReduction();
     }
 
     public Vector3 GetDirection()
     {
         return direction;
+    }
+
+    // Cohesion gets enemies to come together 
+    private void DoSpeedReduction()
+    {
+        Vector3 sumPos = Vector3.zero;
+
+        // added up all the positions from our nearbyAllies
+        foreach (EnemyLogic ally in nearbyAllies)
+        {
+            sumPos += ally.transform.position;
+        }
+
+        // divide to get the average
+        sumPos /= nearbyAllies.Count;
+
+        // get the offset from this enemy
+        sumPos -= transform.position;
+
+        // get our distance to this offset point
+        float dist = Vector3.Distance(sumPos, transform.position);
+
+        // normalize (0 when close, 1 when far)
+        float t = Mathf.InverseLerp(0, echoRadius, dist);
+
+        float speed = Mathf.Lerp(0.0f, thisEnemy.GetMaxSpeed(), t);
+
+        thisEnemy.SetCurrentSpeed(Mathf.Lerp(thisEnemy.GetCurrentSpeed(), speed, Time.deltaTime * 10f));
     }
 
     // Cohesion gets enemies to come together 

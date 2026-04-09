@@ -29,7 +29,9 @@ public class EnemyLogic : MonoBehaviour
 
     // tile to move to
     public Vector2 movementTargetTile;
-    //Movement speed
+    // Maximum Movement speed
+    private float maxSpeed = 0.0f;
+    // Current Movement speed
     public float Speed = 100.0f;
     //Starting health
     public int StartingHealth = 1;
@@ -133,6 +135,9 @@ public class EnemyLogic : MonoBehaviour
 
         // get a ref to our flock controller
         flockController = FindObjectOfType<FlockController>();
+
+        // set our max speed
+        maxSpeed = Speed;
     }
 
     void OnDestroy()
@@ -556,6 +561,21 @@ public class EnemyLogic : MonoBehaviour
         }
 
         return false;
+    }
+
+    public float GetMaxSpeed()
+    {
+        return maxSpeed;
+    }
+
+    public float GetCurrentSpeed()
+    {
+        return Speed;
+    }
+
+    public void SetCurrentSpeed(float newSpeed)
+    {
+        Speed = newSpeed;
     }
 
     public float GetEchoRadius()
