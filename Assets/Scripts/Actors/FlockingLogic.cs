@@ -18,7 +18,9 @@ public class FlockingLogic : MonoBehaviour
 
     // a referance to this enemy's echo radius
     private float echoRadius = 0;
-    // a referance to this enemy's avoidance radius
+    // a referance to this enemy's maximum separation radius
+    private float maxSeparationRadius = 0;
+    // a referance to this enemy's separation radius
     private float separationRadius = 0;
 
     // a referance to our leaders position
@@ -41,6 +43,16 @@ public class FlockingLogic : MonoBehaviour
     
     // the rate of our smoothing of cohesion
     private float smoothRate = 0.5f;
+
+    // bools for controlling which behavior we want to do at any time
+    private bool doCohesion = true;
+    private bool doSeparation = true;
+    private bool doAlignment = true;
+    private bool doTether = true;
+    private bool doReducedSeparationRadius = false;
+
+    // the amount to reduce the seperation radius by
+    private float separationRadiusReductionRatio = 0.6f;
 
     // Start is called before the first frame update
     void Start()
@@ -115,10 +127,10 @@ public class FlockingLogic : MonoBehaviour
             direction = transform.up;
 
             // UNLESS we have a leader
-            if (thisEnemy.HasLeader())
+            if (thisEnemy.HasLeader() && doTether == true)
             {
                 //In which case we still want to do our tether 
-                direction = DoTether() * flockController.GetTetherWeight();
+                direction = FindTetherVec() * flockController.GetTetherWeight();
             }
 
             return;
@@ -127,10 +139,39 @@ public class FlockingLogic : MonoBehaviour
         //// zero out the direction vector to contruct it again
         direction = Vector3.zero;
 
-        Vector3 weightedCohesion = DoCohesion() * flockController.GetCohesionWeight(); 
-        Vector3 weightedSeparation = DoSeparation() * flockController.GetSeparationWeight(); 
-        Vector3 weightedAlignment = DoAlignment() * flockController.GetAlignmentWeight();
-        Vector3 weightedTether = DoTether() * flockController.GetTetherWeight();
+        Vector3 weightedCohesion = Vector3.zero;
+        Vector3 weightedSeparation = Vector3.zero;
+        Vector3 weightedAlignment = Vector3.zero;
+        Vector3 weightedTether = Vector3.zero;
+
+        if (doCohesion == true)
+        {
+            weightedCohesion = FindCohesionVec() * flockController.GetCohesionWeight();
+        }
+        if (doSeparation == true)
+        {
+            // if we need to reduce the separation radius
+            if (doReducedSeparationRadius == true)
+            {
+                // then our separation redius is the max radius multiplied by a ratio
+                separationRadius = maxSeparationRadius * separationRadiusReductionRatio;
+            }
+            else
+            {
+                // otherwise our separation redius is the max radius
+                separationRadius = maxSeparationRadius;
+            }
+
+            weightedSeparation = FindSeparationVec() * flockController.GetSeparationWeight();
+        }
+        if (doAlignment == true)
+        {
+            weightedAlignment = FindAlignmentVec() * flockController.GetAlignmentWeight();
+        }
+        if (doTether == true)
+        {
+            weightedTether = FindTetherVec() * flockController.GetTetherWeight();
+        }
 
         direction += weightedCohesion + weightedSeparation + weightedAlignment + weightedTether;
     }
@@ -141,7 +182,7 @@ public class FlockingLogic : MonoBehaviour
     }
 
     // Cohesion gets enemies to come together 
-    private Vector3 DoCohesion()
+    private Vector3 FindCohesionVec()
     {
         Vector3 sumPos = Vector3.zero;
 
@@ -164,7 +205,7 @@ public class FlockingLogic : MonoBehaviour
     }
 
     // Separation gets enemes to move away from each other 
-    private Vector3 DoSeparation() 
+    private Vector3 FindSeparationVec() 
     {
         // the sum positions of all allies we will avoid
         Vector3 sumPos = Vector3.zero;
@@ -196,7 +237,7 @@ public class FlockingLogic : MonoBehaviour
     }
 
     // Alignment gets enemes to try and face the same direction 
-    private Vector3 DoAlignment()
+    private Vector3 FindAlignmentVec()
     {
         Vector3 sumFacing = Vector3.zero;
 
@@ -227,7 +268,7 @@ public class FlockingLogic : MonoBehaviour
     }
 
     // Tether makes sure that they stay within bounds of their leader
-    private Vector3 DoTether()
+    private Vector3 FindTetherVec()
     {
         // we do not set this to 0 so that enemies still move within the tether radius of their leaders
         Vector3 leaderDirection = transform.up;
@@ -255,46 +296,86 @@ public class FlockingLogic : MonoBehaviour
         echoRadius = newRadius;
     }
 
-    public void SetSeparationRadius(float newRadius)
+    public void SetMaxSeparationRadius(float newRadius)
     {
-        separationRadius = newRadius;
+        maxSeparationRadius = newRadius;
     }
+
+    public void DoCohesion(bool enabled)
+    {
+        doCohesion = enabled; 
+    }
+
+    public void DoSeparation(bool enabled)
+    {
+        doSeparation = enabled;
+    }
+
+    public void DoReducedSeparationRadius(bool enabled)
+    {
+        doReducedSeparationRadius = enabled;
+    }
+
+    public void DoAlignment(bool enabled)
+    {
+        doAlignment = enabled;
+    }
+
+    public void DoTether(bool enabled)
+    {
+        doTether = enabled;
+    }
+
 
     private float segments = 60.0f;
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.green;
-        float angleStep = 360.0f / segments;
-        Vector3 prevPoint = transform.position + new Vector3(echoRadius, 0, 0);
-
-        for (int i = 1; i <= segments; i++)
+        if (doCohesion == true)
         {
-            float angle = Mathf.Deg2Rad * angleStep * i;
+            Gizmos.color = Color.green;
+            float angleStep = 360.0f / segments;
+            Vector3 prevPoint = transform.position + new Vector3(echoRadius, 0, 0);
 
-            Vector3 newPoint = transform.position + new Vector3(
-                Mathf.Cos(angle) * echoRadius,
-                Mathf.Sin(angle) * echoRadius,
-                0
-            );
+            for (int i = 1; i <= segments; i++)
+            {
+                float angle = Mathf.Deg2Rad * angleStep * i;
 
-            Gizmos.DrawLine(prevPoint, newPoint);
-            prevPoint = newPoint;
+                Vector3 newPoint = transform.position + new Vector3(
+                    Mathf.Cos(angle) * echoRadius,
+                    Mathf.Sin(angle) * echoRadius,
+                    0
+                );
+
+                Gizmos.DrawLine(prevPoint, newPoint);
+                prevPoint = newPoint;
+            }
         }
 
-        Gizmos.color = Color.red;
-        prevPoint = transform.position + new Vector3(separationRadius, 0, 0);
-        for (int i = 1; i <= segments; i++)
+        if (doSeparation == true)
         {
-            float angle = Mathf.Deg2Rad * angleStep * i;
+            float radius = maxSeparationRadius;
 
-            Vector3 newPoint = transform.position + new Vector3(
-                Mathf.Cos(angle) * separationRadius,
-                Mathf.Sin(angle) * separationRadius,
-                0
-            );
+            if (doReducedSeparationRadius == true)
+            {
+                radius = maxSeparationRadius * separationRadiusReductionRatio;
+            }
 
-            Gizmos.DrawLine(prevPoint, newPoint);
-            prevPoint = newPoint;
+            Gizmos.color = Color.red;
+            float angleStep = 360.0f / segments;
+            Vector3 prevPoint = transform.position + new Vector3(radius, 0, 0);
+            for (int i = 1; i <= segments; i++)
+            {
+                float angle = Mathf.Deg2Rad * angleStep * i;
+
+                Vector3 newPoint = transform.position + new Vector3(
+                    Mathf.Cos(angle) * radius,
+                    Mathf.Sin(angle) * radius,
+                    0
+                );
+
+                Gizmos.DrawLine(prevPoint, newPoint);
+                prevPoint = newPoint;
+            }
         }
     }
 }

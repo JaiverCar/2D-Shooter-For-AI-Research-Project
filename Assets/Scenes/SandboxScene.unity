@@ -791,6 +791,7 @@ MonoBehaviour:
   separationWeight: 2
   alignmentWeight: 1
   tetherWeight: 1
+  AstarPathThreshHoldDistance: 2
 --- !u!850595691 &336224611
 LightingSettings:
   m_ObjectHideFlags: 0

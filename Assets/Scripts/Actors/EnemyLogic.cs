@@ -56,6 +56,8 @@ public class EnemyLogic : MonoBehaviour
     private float echoRadius = 0;
     // ref to this enemies leader
     private LeaderLogic leader;
+    // ref to the flock controller
+    private FlockController flockController;
 
     //Current health
     [HideInInspector]
@@ -128,6 +130,9 @@ public class EnemyLogic : MonoBehaviour
         {
             TerrainAnalysis.Instance.RegisterEnemy(transform);
         }
+
+        // get a ref to our flock controller
+        flockController = FindObjectOfType<FlockController>();
     }
 
     void OnDestroy()
@@ -278,7 +283,26 @@ public class EnemyLogic : MonoBehaviour
             Vector3 movementTargetLocation = currTarget;
 
             Vector3 flockDir = GetComponent<FlockingLogic>().GetDirection();
-            Vector2 astarDir = (currTarget - (Vector2)transform.position).normalized;
+            Vector2 astarDir = currTarget - (Vector2)transform.position;
+            // if the distance between us and our Astar target goes bellow this threshhold
+            if (astarDir.magnitude < flockController.GetFlockingAstarPathThreshHoldDistance())
+            {
+                //disable certain parts of flocking so that the enemy can follow the Astar path correctly
+                GetComponent<FlockingLogic>().DoCohesion(false);
+                GetComponent<FlockingLogic>().DoAlignment(false);
+                GetComponent<FlockingLogic>().DoReducedSeparationRadius(true);
+            }
+            //else 
+            //{
+            //    //
+            //    GetComponent<FlockingLogic>().DoCohesion(true);
+            //    GetComponent<FlockingLogic>().DoAlignment(true);
+            //}
+
+                // normalize the direction to our Astar target to add it to our blended direction
+                astarDir = astarDir.normalized;
+
+
             Vector2 blendedDir = (astarDir + (Vector2)flockDir * 1.5f).normalized; // Increase from 0.3 to 1.5
 
             if (HasReachedMovementTarget(movementTargetLocation) == false)

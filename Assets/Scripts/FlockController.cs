@@ -23,9 +23,9 @@ public class FlockController : MonoBehaviour
     [SerializeField]
     [Range(0.0f, 10.0f)]
     private float tetherWeight = 1.0f;
-    //[SerializeField]
-    //[Range(0.0f, 100.0f)]
-    //private float wanderStrength = 0.0f;
+    // the distance at which we will disable certain parts of flocking for specific enemies
+    [SerializeField]
+    private float AstarPathThreshHoldDistance = 0.0f;
 
 
     // Start is called before the first frame update
@@ -42,7 +42,7 @@ public class FlockController : MonoBehaviour
         foreach (FlockingLogic enemy in enemies)
         {
             enemy.SetEchoRadius(currentEchoRadius);
-            enemy.SetSeparationRadius(separationRange * currentEchoRadius);
+            enemy.SetMaxSeparationRadius(separationRange * currentEchoRadius);
         }
     }
 
@@ -71,6 +71,10 @@ public class FlockController : MonoBehaviour
     public float GetTetherWeight()
     {
         return tetherWeight;
+    }
+    public float GetFlockingAstarPathThreshHoldDistance()
+    {
+        return AstarPathThreshHoldDistance;
     }
     //public float GetWanderStrength()
     //{
