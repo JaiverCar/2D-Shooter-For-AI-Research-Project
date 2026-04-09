@@ -64,9 +64,6 @@ public class FlockingLogic : MonoBehaviour
         // this ref should never be null
         Debug.Assert(thisEnemy != null);
 
-        // the echo radius should always be greater than zero
-        Debug.Assert(echoRadius > 0);
-
         // get a ref to our flock controller
         flockController = FindObjectOfType<FlockController>();
 
@@ -208,6 +205,8 @@ public class FlockingLogic : MonoBehaviour
         float t = Mathf.InverseLerp(0, echoRadius, dist);
 
         float speed = Mathf.Lerp(0.0f, thisEnemy.GetMaxSpeed(), t);
+
+        Debug.Log(speed);
 
         thisEnemy.SetCurrentSpeed(Mathf.Lerp(thisEnemy.GetCurrentSpeed(), speed, Time.deltaTime * 10f));
     }
