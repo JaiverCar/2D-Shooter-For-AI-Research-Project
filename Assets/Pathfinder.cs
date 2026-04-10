@@ -78,6 +78,7 @@ public class Pathfinder : MonoBehaviour
 
                 while (node != null)
                 {
+                    node.extraCost += 0.5f;
                     reversedPath.Add(node.worldPosition);
                     node = node.parent;
                 }
@@ -126,8 +127,8 @@ public class Pathfinder : MonoBehaviour
                         continue;
                 }
 
-                //calculate new G cost
-                float newG = curr.gCost + neighbor.cost;
+                //calculate new G cost (include extraCost for path avoidance)
+                float newG = curr.gCost + neighbor.cost + Grid.Instance.GridGet(neighbor.pos).extraCost;
                 float hNeighbor = CalculateHeuristic(neighbor.pos, goalNode.pos, weight);
 
                 Node node = Grid.Instance.GridGet(neighbor.pos);

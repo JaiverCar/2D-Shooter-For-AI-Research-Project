@@ -1,7 +1,11 @@
+
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
+
+
 
 // Helper class for storing float values per grid cell
 public class MapLayer<T>
@@ -129,22 +133,9 @@ public class TerrainAnalysis : MonoBehaviour
 
     void Awake()
     {
-        // Singleton setup - simple per-scene singleton
-        if (Instance != null && Instance != this)
-        {
-            Debug.LogWarning("Multiple TerrainAnalysis instances found! Destroying duplicate.");
-            Destroy(gameObject);
-            return;
-        }
         Instance = this;
 
         // Force initialization here to ensure it happens before scene values override
-        InitializeOnSceneLoad();
-    }
-
-    void OnEnable()
-    {
-        // Re-initialize when component is enabled
         InitializeOnSceneLoad();
     }
 
@@ -182,13 +173,18 @@ public class TerrainAnalysis : MonoBehaviour
             grid = AStarGrid.Instance;
         }
 
-        // Setup common layers
-        if (grid != null && layers.Count == 0)
+        // Setup common layers - ONLY in Start when grid is ready!
+        if (grid != null)
         {
             SetupCommonLayers();
-            Debug.Log($"TerrainAnalysis: Created {layers.Count} common layers");
+            Debug.Log($"TerrainAnalysis: Created {layers.Count} common layers in Start()");
+        }
+        else
+        {
+            Debug.LogError("TerrainAnalysis: Grid not ready in Start()!");
         }
     }
+
 
     void Update()
     {
@@ -269,11 +265,11 @@ public class TerrainAnalysis : MonoBehaviour
     public void SetupCommonLayers()
     {
         // Openness layer (blue-red gradient)
-        var opennessVis = AddLayer("Openness", ColorScheme.BlueRed, 0.5f, LayerType.Openness);
+        var opennessVis = AddLayer("Openness", ColorScheme.BlueRed, 0.4f, LayerType.Openness);
         AnalyzeOpenness(opennessVis.layer);
 
         // Visibility layer (green-red gradient)
-        var visibilityVis = AddLayer("Visibility", ColorScheme.GreenRed, 0.5f, LayerType.Visibility);
+        var visibilityVis = AddLayer("Visibility", ColorScheme.GreenRed, 0.4f, LayerType.Visibility);
         AnalyzeVisibility(visibilityVis.layer);
 
         showVisualization = true;
@@ -296,7 +292,9 @@ public class TerrainAnalysis : MonoBehaviour
         }
 
         string layerName = enemyName ?? $"Enemy Vision - {enemy.name}";
-        var visionLayer = AddLayer(layerName, enemyVisionColorScheme, enemyVisionAlpha, LayerType.EnemyVision);
+        var visionLayer = AddLayer(layerName, ColorScheme.Custom, enemyVisionAlpha, LayerType.EnemyVision);
+        visionLayer.lowValueColor = Color.clear;
+        visionLayer.highValueColor = Color.red;
         enemyVisionLayers[enemy] = visionLayer;
 
         // Initial update
@@ -426,9 +424,6 @@ public class TerrainAnalysis : MonoBehaviour
 
                 if (layerCount > 0)
                 {
-                    // Normalize if multiple layers
-                    if (layerCount > 1)
-                        finalColor = finalColor / layerCount;
 
                     finalColor.a = Mathf.Clamp01(finalColor.a);
                     Gizmos.color = finalColor;

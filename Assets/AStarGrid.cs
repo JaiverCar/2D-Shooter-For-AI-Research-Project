@@ -15,6 +15,7 @@ public class Node
     public Vector2 pos => new Vector2(gridX, gridY);
 
     public float gCost, hCost;
+    public float extraCost = 0;
     public Node parent;
     public float fCost => gCost + hCost;
 
@@ -103,6 +104,10 @@ public class AStarGrid : MonoBehaviour
     public float nodeRadius = 0.5f;
     public LayerMask obstacleLayer;
 
+    [Header("Path Cost Decay")]
+    [Tooltip("How much extraCost decays per second")]
+    public float costDecayRate = 0.1f;
+
     Node[,] grid;
     float nodeDiameter;
     public int gridSizeX, gridSizeY;
@@ -115,6 +120,26 @@ public class AStarGrid : MonoBehaviour
         gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
         BuildGrid();
         GetAllNeighbors();
+    }
+
+    void Update()
+    {
+        // Decay extraCost over time for all nodes
+        if (grid != null && costDecayRate > 0)
+        {
+            float decayAmount = costDecayRate * Time.deltaTime;
+
+            for (int x = 0; x < gridSizeX; x++)
+            {
+                for (int y = 0; y < gridSizeY; y++)
+                {
+                    if (grid[x, y].extraCost > 0)
+                    {
+                        grid[x, y].extraCost = Mathf.Max(0, grid[x, y].extraCost - decayAmount);
+                    }
+                }
+            }
+        }
     }
 
     void BuildGrid()
