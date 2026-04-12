@@ -50,10 +50,6 @@ public class Flag : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var bullets = FindObjectsOfType<BulletLogic>();
-
-        Debug.Log(bullets.Count().ToString());
-
         //GameManager.Instance.ourFlag = this.transform;
 
         // if the player is holding us
