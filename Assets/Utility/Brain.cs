@@ -64,6 +64,7 @@ namespace UtilityAI
         void UpdateContext()
         {
             context.SetData("health", thisEnemy.Health);
+            context.SetData("speed", thisEnemy.Speed);
         }
     }
 }
