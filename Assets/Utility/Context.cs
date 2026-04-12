@@ -8,7 +8,6 @@ namespace UtilityAI
     public class Context
     {
         public Brain brain;
-        public NavMeshAgent agent;
         public Transform target;
 
         readonly Dictionary<string, object> data = new();

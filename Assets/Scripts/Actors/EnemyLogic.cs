@@ -13,6 +13,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UtilityAI;
 using static PCG;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -93,11 +94,15 @@ public class EnemyLogic : MonoBehaviour
     public Transform Player = null;
     public float repathInterval = 0.2f;
 
+    //Astar stuff
     List<Vector2> path;
     int waypointIndex;
     Vector2 currTarget;
     public Transform Flag = null;
     public Transform AstarTarget = null;
+
+    //Brain
+    private Brain thisBrain;
 
     //Don't do anything because a cinematic occuring
     [HideInInspector]
@@ -136,6 +141,9 @@ public class EnemyLogic : MonoBehaviour
         // get a ref to our flock controller
         flockController = FindObjectOfType<FlockController>();
 
+        thisBrain = GetComponent<Brain>();
+        thisBrain.thisEnemy = this;
+
         // set our max speed
         maxSpeed = Speed;
     }
@@ -166,67 +174,71 @@ public class EnemyLogic : MonoBehaviour
         GetFlagReference();
         GetPlayerReference();
 
-        // Determine the desired target based on aggro state
-        Transform desiredTarget = (Aggroed == true && Wander == false) ? Player : Flag;
-
-        // Only update target if it actually changed
-        if (AstarTarget != desiredTarget)
+        if (thisBrain)
         {
-            Debug.Log(gameObject.name + " switching to " + desiredTarget.name);
-            AstarTarget = desiredTarget;
-        }
+            // Determine the desired target based on aggro state
+            thisBrain.context.target = (Aggroed == true && Wander == false) ? Player : Flag;
+            Transform desiredTarget = thisBrain.context.target;
 
-        // Pathfinding logic - check if we need to repath (AI HELPED HERE)
-        repathTimer += Time.deltaTime;
-
-        bool targetChanged = lastTarget != AstarTarget;
-        bool targetMoved = AstarTarget != null && Vector2.Distance(AstarTarget.position, lastTargetPos) > 0.3f;
-
-        // Check if we've reached the current waypoint (or path is invalid)
-        bool atWaypoint = path == null || waypointIndex >= path.Count || 
-                          Vector2.Distance(transform.position, path[waypointIndex]) < 0.16f;
-
-        // Check if we're at the end of the path completely
-        bool atEndOfPath = path != null && waypointIndex >= path.Count;
-
-        // START AI HELP
-
-        // Repath if:
-        // - Target changed (immediate aggro response)
-        // - At end of path and timer elapsed (keep following)
-        // - Timer elapsed AND target moved AND at a waypoint (smooth tracking)
-        if (AstarTarget != null && 
-            (targetChanged || 
-             (atEndOfPath && repathTimer >= repathInterval) ||
-             (repathTimer >= repathInterval && targetMoved && atWaypoint)))
-        {
-            lastTarget = AstarTarget;
-            lastTargetPos = AstarTarget.position;
-
-            List<Vector2> newPath = Pathfinder.Instance.FindPath(transform.position, AstarTarget.position);
-            if (newPath != null && newPath.Count > 1)
+            // Only update target if it actually changed
+            if (AstarTarget != desiredTarget)
             {
-                newPath.RemoveAt(0);
-                path = newPath;
-                waypointIndex = 0;
+                Debug.Log(gameObject.name + " switching to " + desiredTarget.name);
+                AstarTarget = desiredTarget;
             }
 
-            repathTimer = 0.0f;
+            // Pathfinding logic - check if we need to repath (AI HELPED HERE)
+            repathTimer += Time.deltaTime;
+
+            bool targetChanged = lastTarget != AstarTarget;
+            bool targetMoved = AstarTarget != null && Vector2.Distance(AstarTarget.position, lastTargetPos) > 0.3f;
+
+            // Check if we've reached the current waypoint (or path is invalid)
+            bool atWaypoint = path == null || waypointIndex >= path.Count ||
+                              Vector2.Distance(transform.position, path[waypointIndex]) < 0.16f;
+
+            // Check if we're at the end of the path completely
+            bool atEndOfPath = path != null && waypointIndex >= path.Count;
+
+            // START AI HELP
+
+            // Repath if:
+            // - Target changed (immediate aggro response)
+            // - At end of path and timer elapsed (keep following)
+            // - Timer elapsed AND target moved AND at a waypoint (smooth tracking)
+            if (AstarTarget != null &&
+                (targetChanged ||
+                 (atEndOfPath && repathTimer >= repathInterval) ||
+                 (repathTimer >= repathInterval && targetMoved && atWaypoint)))
+            {
+                lastTarget = AstarTarget;
+                lastTargetPos = AstarTarget.position;
+
+                List<Vector2> newPath = Pathfinder.Instance.FindPath(transform.position, AstarTarget.position);
+                if (newPath != null && newPath.Count > 1)
+                {
+                    newPath.RemoveAt(0);
+                    path = newPath;
+                    waypointIndex = 0;
+                }
+
+                repathTimer = 0.0f;
+            }
+
+            // END AI HELP
+
+
+            // if the path is empty or there we are at the end of it, stop moving (ASTAR)
+            if (path == null || waypointIndex >= path.Count)
+            {
+                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                return;
+            }
+
+            // set the advanced flag to false and update current move target (ASTAR)
+            advancedThisFrame = false;
+            currTarget = path[waypointIndex];
         }
-
-        // END AI HELP
-
-
-        // if the path is empty or there we are at the end of it, stop moving (ASTAR)
-        if (path == null || waypointIndex >= path.Count)
-        {
-            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            return;
-        }
-
-        // set the advanced flag to false and update current move target (ASTAR)
-        advancedThisFrame = false;
-        currTarget = path[waypointIndex];
 
 
         if (Player == null || !Player.gameObject.activeInHierarchy)

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1063118913074609497}
   - component: {fileID: 8264996340615861227}
   - component: {fileID: 4905951875147358756}
+  - component: {fileID: 1287340522704413183}
   m_Layer: 0
   m_Name: BaseEnemy
   m_TagString: Enemy
@@ -188,6 +189,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   leaderPos: {x: 0, y: 0, z: 0}
   tetherRadius: 15
+--- !u!114 &1287340522704413183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1063118913074609479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19fad58a4d28e6449a197edc5ee7340, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actions: []
 --- !u!1001 &950290501062243365
 PrefabInstance:
   m_ObjectHideFlags: 0

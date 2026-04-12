@@ -14,7 +14,7 @@ namespace UtilityAI
 
         ActionAI bestAction;
 
-        EnemyLogic thisEnemy;
+        public EnemyLogic thisEnemy;
 
         // Start is called before the first frame update
         void Awake()
@@ -31,7 +31,14 @@ namespace UtilityAI
         // Update is called once per frame
         void Update()
         {
-            UpdateContext();
+            if (thisEnemy)
+            {
+                UpdateContext();
+            }
+            else
+            {
+                EnemyLogic thisEnemy = GetComponent<EnemyLogic>();
+            }
 
             bestAction = null;
             float highestUtility = 0.0f;
