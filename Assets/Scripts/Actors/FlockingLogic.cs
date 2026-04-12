@@ -182,7 +182,7 @@ public class FlockingLogic : MonoBehaviour
         return direction;
     }
 
-    Vector3 test;
+    //Vector3 test;
 
     // Cohesion gets enemies to come together 
     private void DoSpeedReduction()
@@ -230,7 +230,7 @@ public class FlockingLogic : MonoBehaviour
         //sumPos /= frontAllies;
         Vector3 closestAllyPos = closestAlly.transform.position;
 
-        test = closestAllyPos;
+        //test = closestAllyPos;
 
         // find we we are facing the average position of our nearbyAllies
         Vector3 dir = (closestAllyPos - transform.position).normalized;
@@ -420,11 +420,11 @@ public class FlockingLogic : MonoBehaviour
     private float segments = 60.0f;
     private void OnDrawGizmos()
     {
-        if (this.name == "BaseEnemy (3)")
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(test, 0.5f);
-        }
+        //if (this.name == "BaseEnemy (3)")
+        //{
+        //    Gizmos.color = Color.yellow;
+        //    Gizmos.DrawWireSphere(test, 0.5f);
+        //}
 
 
         if (doCohesion == true)
