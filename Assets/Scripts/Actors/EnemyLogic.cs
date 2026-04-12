@@ -118,6 +118,8 @@ public class EnemyLogic : MonoBehaviour
     float directionBlendSpeed = 10.0f; // How fast to blend between old and new direction
     float repathTimer = 0.0f;
 
+    public static event Action<EnemyLogic> OnEnemyDied;
+
     void Start()
     {
         //Set the minimum range at which aggro will be dropped to 150% of the aggro range
@@ -555,6 +557,9 @@ public class EnemyLogic : MonoBehaviour
             GetComponent<EnemyLogic>().SetAggroState(true); //Aggro when hit
             if (Health <= 0) //We're dead, so destroy ourself
             {
+                //fire an event when an enemy dies:
+                OnEnemyDied?.Invoke(this);
+
                 if (UnityEngine.Random.Range(0.0f, 1.0f) <= DropChance)
                     Instantiate(PCGObject.Prefabs["heart"], transform.position, Quaternion.identity);
                 Destroy(gameObject);
