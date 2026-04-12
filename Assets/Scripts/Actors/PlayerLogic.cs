@@ -9,6 +9,7 @@ Description:
     Handles all player logic and stats.
 
 *******************************************************************************/
+using System;
 using UnityEngine;
 using static PCG;
 
@@ -65,7 +66,9 @@ public class PlayerLogic : MonoBehaviour
 
     [HideInInspector]
     public bool CinematicMode = false; //Don't do anything because a cinematic is occuring
- 
+
+    public static event Action OnPlayerDead;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -167,6 +170,7 @@ public class PlayerLogic : MonoBehaviour
             Health -= 1;
             if (Health <= 0) //We are dead, so reset the level
             {
+                OnPlayerDead?.Invoke();
                 gameObject.SetActive(false);
                 PCGObject.ResetLevel(1.5f); //Reset after a 1.5 second delay
             }
