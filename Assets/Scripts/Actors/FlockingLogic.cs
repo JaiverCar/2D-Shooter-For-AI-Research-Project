@@ -2,6 +2,7 @@ using Newtonsoft.Json.Bson;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
@@ -181,34 +182,93 @@ public class FlockingLogic : MonoBehaviour
         return direction;
     }
 
+    Vector3 test;
+
     // Cohesion gets enemies to come together 
     private void DoSpeedReduction()
     {
-        Vector3 sumPos = Vector3.zero;
+        EnemyLogic closestAlly = null;
 
-        // added up all the positions from our nearbyAllies
+        float closestDist = echoRadius;
+
+        // find our closest ally that is infront of us
         foreach (EnemyLogic ally in nearbyAllies)
         {
-            sumPos += ally.transform.position;
+            // get the direction to our ally
+            Vector3 allyDir = (ally.transform.position - transform.position).normalized;
+
+            float allydp = Vector3.Dot(transform.up, allyDir);
+
+            // if they are infront of us
+            if (allydp > 0.2f)
+            {
+                // get our distance to that ally
+                float allyDist = Vector3.Distance(ally.transform.position, transform.position);
+
+                // and if they are closer than our closestAlly
+                if (allyDist < closestDist)
+                {
+                    // update our closest ally
+                    closestDist = allyDist;
+                    closestAlly = ally;
+                }
+            }
+        }
+
+        // if there are NO allies infront of us, then return to normal speed 
+        if (closestAlly == null)
+        {
+            // lerp between our current speed and our max speed
+            float newSpeed = Mathf.Lerp(thisEnemy.GetCurrentSpeed(), thisEnemy.GetMaxSpeed(), Time.deltaTime * 10f);
+
+            // set the new speed
+            thisEnemy.SetCurrentSpeed(newSpeed);
+            return;
         }
 
         // divide to get the average
-        sumPos /= nearbyAllies.Count;
+        //sumPos /= frontAllies;
+        Vector3 closestAllyPos = closestAlly.transform.position;
 
-        // get the offset from this enemy
-        sumPos -= transform.position;
+        test = closestAllyPos;
 
-        // get our distance to this offset point
-        float dist = Vector3.Distance(sumPos, transform.position);
+        // find we we are facing the average position of our nearbyAllies
+        Vector3 dir = (closestAllyPos - transform.position).normalized;
+        float dp = Vector3.Dot(transform.up, dir);
 
-        // normalize (0 when close, 1 when far)
-        float t = Mathf.InverseLerp(0, echoRadius, dist);
+        // if we are facing that position, slow down based on our distance
+        if (dp > 0.2f)
+        {
+            // get our distance to this average point
+            float dist = Vector3.Distance(closestAllyPos, transform.position);
 
-        float speed = Mathf.Lerp(0.0f, thisEnemy.GetMaxSpeed(), t);
+            // find how close we are to the average poistion of our nearbyAllies
+            float t = Mathf.InverseLerp(separationRadius + 0.1f, echoRadius, dist);
 
-        Debug.Log(speed);
+            // get a new target speed based on that distance
+            float targetSpeed = Mathf.Lerp(0.0f, thisEnemy.GetMaxSpeed(), t);
 
-        thisEnemy.SetCurrentSpeed(Mathf.Lerp(thisEnemy.GetCurrentSpeed(), speed, Time.deltaTime * 10f));
+            // lerp between our current speed and our target speed
+            float newSpeed = Mathf.Lerp(thisEnemy.GetCurrentSpeed(), targetSpeed, Time.deltaTime * 10f);
+
+            // if the new speed is too small, just set it to zero
+            if (newSpeed < 0.01 || dist < separationRadius + 0.1f)
+            {
+                newSpeed = 0.0f;
+            }
+
+            // set the new speed
+            thisEnemy.SetCurrentSpeed(newSpeed);
+        }
+        // if we are NOT facing the position, go back to normal speed
+        else
+        {
+            // lerp between our current speed and our max speed
+            float newSpeed = Mathf.Lerp(thisEnemy.GetCurrentSpeed(), thisEnemy.GetMaxSpeed(), Time.deltaTime * 10f);
+
+            // set the new speed
+            thisEnemy.SetCurrentSpeed(newSpeed);
+        }
     }
 
     // Cohesion gets enemies to come together 
@@ -360,6 +420,13 @@ public class FlockingLogic : MonoBehaviour
     private float segments = 60.0f;
     private void OnDrawGizmos()
     {
+        if (this.name == "BaseEnemy (3)")
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(test, 0.5f);
+        }
+
+
         if (doCohesion == true)
         {
             Gizmos.color = Color.green;
