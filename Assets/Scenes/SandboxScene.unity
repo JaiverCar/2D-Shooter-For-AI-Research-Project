@@ -666,6 +666,8 @@ GameObject:
   m_Component:
   - component: {fileID: 280324701}
   - component: {fileID: 280324700}
+  - component: {fileID: 280324702}
+  - component: {fileID: 280324703}
   m_Layer: 0
   m_Name: Flag
   m_TagString: Untagged
@@ -740,6 +742,34 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!58 &280324702
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 280324699}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.51
+--- !u!114 &280324703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 280324699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbb65b77a4df45b41a87927b4bddeeb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &281029817 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8615021814056089060, guid: b4cff1960f5797e448ff087c5eb3bcbc,
