@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static UnityEngine.EventSystems.EventTrigger;
 
@@ -49,6 +50,10 @@ public class Flag : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        var bullets = FindObjectsOfType<BulletLogic>();
+
+        Debug.Log(bullets.Count().ToString());
+
         //GameManager.Instance.ourFlag = this.transform;
 
         // if the player is holding us

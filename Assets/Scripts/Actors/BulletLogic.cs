@@ -30,7 +30,7 @@ public class BulletLogic : MonoBehaviour
     void Update()
     {
         //Destroy the bullet after it has travelled far enough
-        BulletRangeLeft -= (Time.deltaTime * GetComponent<Rigidbody2D>().velocity.magnitude);
+        BulletRangeLeft -= Time.deltaTime; //* GetComponent<Rigidbody2D>().velocity.magnitude);
 		if (BulletRangeLeft < 0)
 			Destroy(gameObject);
 	}

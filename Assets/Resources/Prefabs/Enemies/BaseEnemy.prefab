@@ -202,6 +202,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actions: []
+  thisEnemy: {fileID: 0}
 --- !u!1001 &950290501062243365
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -337,7 +338,7 @@ PrefabInstance:
     - target: {fileID: 3395547099781505576, guid: 41960cec8f26d79439a69f015f23fd92,
         type: 3}
       propertyPath: BulletRange
-      value: 20
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3395547099781505576, guid: 41960cec8f26d79439a69f015f23fd92,
         type: 3}
