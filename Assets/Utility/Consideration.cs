@@ -8,6 +8,7 @@ namespace UtilityAI
     {
         public AnimationCurve curve;
         public string contextKey;
+        public int priority = 0;
 
         public float EvaluateCurve(Context context)
         {

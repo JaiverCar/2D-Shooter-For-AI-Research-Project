@@ -15,6 +15,8 @@ namespace UtilityAI
 
         public float CalculateUtility(Context context) => consideration.EvaluateCurve(context); // change the value here
 
+        public int GetPriority() => consideration.priority;
+
         public virtual void Execute(Context context)
         {
             // nothing in base class

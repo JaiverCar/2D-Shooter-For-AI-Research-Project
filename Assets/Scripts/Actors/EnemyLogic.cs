@@ -235,7 +235,7 @@ public class EnemyLogic : MonoBehaviour
 
 
             // if the path is empty or there we are at the end of it, stop moving (ASTAR)
-            if ((path == null || waypointIndex >= path.Count) && doAstar == true)
+            if (doAstar == true && (path == null || waypointIndex >= path.Count))
             {
                 GetComponent<Rigidbody2D>().velocity = Vector2.zero;
                 return;
@@ -248,12 +248,15 @@ public class EnemyLogic : MonoBehaviour
             {
                 advancedThisFrame = true;
             }
-            
-            currTarget = path[waypointIndex];
+
+            if (path != null && waypointIndex < path.Count)
+            {
+                currTarget = path[waypointIndex];
+            }
         }
 
 
-        if ((Player == null || !Player.gameObject.activeInHierarchy) && doChasePlayer == true)
+        if (doChasePlayer == true && (Player == null || !Player.gameObject.activeInHierarchy))
         {
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             return;

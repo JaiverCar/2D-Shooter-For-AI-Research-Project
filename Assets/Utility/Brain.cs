@@ -46,11 +46,30 @@ namespace UtilityAI
             foreach(ActionAI action in actions)
             {
                 float utilVal = action.CalculateUtility(context);
+                int priority = (int)action.GetPriority();
 
-                if(utilVal > highestUtility)
+                // Check if this action has a higher utility than the current best
+                if (utilVal > highestUtility)
                 {
                     highestUtility = utilVal;
                     bestAction = action;
+                }
+
+                // If the utility value is the same, check priority
+                if (utilVal == highestUtility)
+                {
+                    if(priority > bestAction.GetPriority())
+                    {
+                        bestAction = action;
+                    }
+                    if(priority == bestAction.GetPriority())
+                    {
+                        // Randomize if they are the same curve and priority
+                        if (UnityEngine.Random.value > 0.5f)
+                        {
+                            bestAction = action;
+                        }
+                    }
                 }
             }
 
