@@ -28,6 +28,8 @@ public class EnemyLogic : MonoBehaviour
     // bool to check if this is a Grunt
     public bool isGrunt = false;
 
+    public bool doChasePlayer = true;
+
     // tile to move to
     public Vector2 movementTargetTile;
     // Maximum Movement speed
@@ -98,6 +100,8 @@ public class EnemyLogic : MonoBehaviour
     List<Vector2> path;
     int waypointIndex;
     Vector2 currTarget;
+    [Header("Variables for Astar:")]
+    public bool doAstar = true;
     public Transform Flag = null;
     public Transform AstarTarget = null;
 
@@ -231,7 +235,7 @@ public class EnemyLogic : MonoBehaviour
 
 
             // if the path is empty or there we are at the end of it, stop moving (ASTAR)
-            if (path == null || waypointIndex >= path.Count)
+            if ((path == null || waypointIndex >= path.Count) && doAstar == true)
             {
                 GetComponent<Rigidbody2D>().velocity = Vector2.zero;
                 return;
@@ -239,11 +243,17 @@ public class EnemyLogic : MonoBehaviour
 
             // set the advanced flag to false and update current move target (ASTAR)
             advancedThisFrame = false;
+
+            if (doAstar == false)
+            {
+                advancedThisFrame = true;
+            }
+            
             currTarget = path[waypointIndex];
         }
 
 
-        if (Player == null || !Player.gameObject.activeInHierarchy)
+        if ((Player == null || !Player.gameObject.activeInHierarchy) && doChasePlayer == true)
         {
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             return;
@@ -265,19 +275,15 @@ public class EnemyLogic : MonoBehaviour
         }
 
         //No reference to an active player, nothing to chase
-        if (Player == null || !Player.gameObject.activeInHierarchy)
+        if ((Player == null || !Player.gameObject.activeInHierarchy) && doChasePlayer == true)
         {
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             SetAggroState(false);
             return;
         }
 
-        //////// work zone bellow, hard hats remaining: 1
-
-        //----------------------------------- disabled agro until we have A* implemented ----------------------------------- 
-
         //      //If player is within aggro range, chase it!
-        var playerDir = (Player.position - transform.position);
+        //var playerDir = (Player.position - transform.position);
 
         // Use vision-based aggro if enabled
 
