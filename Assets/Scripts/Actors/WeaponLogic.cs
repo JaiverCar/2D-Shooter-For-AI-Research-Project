@@ -73,7 +73,7 @@ public class WeaponLogic : MonoBehaviour
             return;
 
         //If the parent is an enemy and it is wandering, don't shoot
-        if (enemy != null && enemy.Wander)
+        if (enemy != null)
             return;
 
         int bulletsLeft = BulletsPerShot;

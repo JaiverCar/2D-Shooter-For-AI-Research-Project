@@ -5,38 +5,48 @@ namespace UtilityAI
     [CreateAssetMenu(menuName = "AI/Actions/A_FindPlayer")]
     public class A_FindPlayer : ActionAI
     {
+        [SerializeField] private float updateThreshold = 1.0f;
+        [SerializeField] private float updateInterval = 0.5f;
 
-        private Transform playerRef = null;
+        // NO instance fields — this is a shared ScriptableObject asset
+
         public override void Init(Context context)
         {
-            if (playerRef == null)
+            if (context.playerRef == null)
+                GetPlayerReference(context);
+
+            if (context.playerRef != null)
             {
-                GetPlayerReference();
+                context.lastPlayerPosition = context.playerRef.position;
+                context.lastUpdateTime = Time.time;
+                context.setTarget(context.playerRef.position);
             }
         }
 
         public override void Execute(Context context)
         {
-            if(playerRef == null)
+            if (context.playerRef == null)
             {
-                GetPlayerReference();
+                GetPlayerReference(context);
                 return;
             }
 
-            context.setTarget(playerRef.position);
+            float distanceMoved = Vector3.Distance(context.playerRef.position, context.lastPlayerPosition);
+            float timeSinceUpdate = Time.time - context.lastUpdateTime;
+
+            if (distanceMoved >= updateThreshold || timeSinceUpdate >= updateInterval)
+            {
+                context.setTarget(context.playerRef.position);
+                context.lastPlayerPosition = context.playerRef.position;
+                context.lastUpdateTime = Time.time;
+            }
         }
 
-        void GetPlayerReference()
+        private void GetPlayerReference(Context context)
         {
-            //Already tracking the player
-            if (playerRef != null)
-                return;
-
-            //Find the player
             var player = GameObject.Find("Player(Clone)");
-            if (player == null)
-                return;
-            playerRef = player.transform;
+            if (player != null)
+                context.playerRef = player.transform;
         }
     }
 }

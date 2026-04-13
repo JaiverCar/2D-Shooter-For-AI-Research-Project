@@ -89,10 +89,10 @@ namespace UtilityAI
 
         void UpdateContext()
         {
-            context.SetData("health", thisEnemy.Health / 3.0f);
+            context.SetData("health", thisEnemy.Health, thisEnemy.StartingHealth);
             context.SetData("speed", thisEnemy.Speed);
             context.SetData("aggroed", thisEnemy.Aggroed);
-            context.SetData("flag", thisEnemy.doAstar);
+            context.SetData("flag", thisEnemy.seesFlag);
         }
     }
 }

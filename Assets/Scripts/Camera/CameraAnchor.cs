@@ -50,8 +50,8 @@ public class CameraAnchor : MonoBehaviour
 
         //Reduce the weight proportionally by the distance for enemies
         float weight = Weight;
-        if (enemy != null)
-            weight /= (enemy.Player.transform.position - transform.position).magnitude + 1.0f; //Add one to not overweight close enemies;
+        //if (enemy != null)
+        //    weight /= (enemy.Player.transform.position - transform.position).magnitude + 1.0f; //Add one to not overweight close enemies;
 
         //For cinematic anchors, override all the other weights with a large value
         if (Cinematic)

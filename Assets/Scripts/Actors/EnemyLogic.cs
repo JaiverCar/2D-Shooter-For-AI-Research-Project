@@ -78,13 +78,6 @@ public class EnemyLogic : MonoBehaviour
     //Current aggro state
     [HideInInspector]
     public bool Aggroed = false;
-    //Minimum deaggro range, which is calculated based on
-    //enemy aggro range and player range
-    private float MinDeaggroRange = 0.0f; //Should always be more than the aggro range
-
-    //Current wander state
-    [HideInInspector]
-    public bool Wander = false;
 
     //Timers
     private float Timer = 0.0f;
@@ -93,7 +86,6 @@ public class EnemyLogic : MonoBehaviour
 
     //Track the player for aggro and targeting purposes
     [HideInInspector]
-    public Transform Player = null;
     public float repathInterval = 0.2f;
 
     //Astar stuff
@@ -106,6 +98,14 @@ public class EnemyLogic : MonoBehaviour
 
     //Brain
     private Brain thisBrain;
+
+    private Scanner thisScanner;
+
+    public bool seesFlag = false;
+    public Vector2 flagLastKnownLocation = Vector2.zero;
+
+    public bool seesPlayer = false;
+    public Vector2 lastKnownPlayerLocation = Vector2.zero;
 
     //Don't do anything because a cinematic occuring
     [HideInInspector]
@@ -125,8 +125,6 @@ public class EnemyLogic : MonoBehaviour
 
     void Start()
     {
-        //Set the minimum range at which aggro will be dropped to 150% of the aggro range
-        MinDeaggroRange = AggroRange * 1.5f;
 
         //Initialize enemy health and health bar
         EnemyHealthBar = transform.Find("EnemyHealthBar").GetComponent<HealthBar>();
@@ -146,6 +144,9 @@ public class EnemyLogic : MonoBehaviour
         thisBrain = GetComponent<Brain>();
         thisBrain.thisEnemy = this;
 
+        thisScanner = GetComponent<Scanner>();
+
+
         // set our max speed
         maxSpeed = Speed;
     }
@@ -163,8 +164,6 @@ public class EnemyLogic : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        GetPlayerReference();
-
         //Don't do anything if in cinematic mode
         if (CinematicMode)
         {
@@ -202,8 +201,10 @@ public class EnemyLogic : MonoBehaviour
             // - Target changed (immediate aggro response)
             // - At end of path and timer elapsed (keep following)
             // - Timer elapsed AND target moved AND at a waypoint (smooth tracking)
+            // - Path is null (initial state) <- ADDED THIS CHECK
             if (AstarTarget != null &&
                 (targetChanged ||
+                 path == null ||
                  (atEndOfPath && repathTimer >= repathInterval) ||
                  (repathTimer >= repathInterval && targetMoved && atWaypoint)))
             {
@@ -222,78 +223,56 @@ public class EnemyLogic : MonoBehaviour
             }
 
             // END AI HELP
-
-
-            // if the path is empty or there we are at the end of it, stop moving (ASTAR)
-            if (doAstar == true && (path == null || waypointIndex >= path.Count))
-            {
-                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-                return;
-            }
-
-            // set the advanced flag to false and update current move target (ASTAR)
-            advancedThisFrame = false;
-
-            if (doAstar == false)
-            {
-                advancedThisFrame = true;
-            }
-
-            if (path != null && waypointIndex < path.Count)
-            {
-                currTarget = path[waypointIndex];
-            }
         }
 
-
-        if (doChasePlayer == true && (Player == null || !Player.gameObject.activeInHierarchy))
+        // if the path is empty or there we are at the end of it, stop moving (ASTAR)
+        if (doAstar == true && (path == null || waypointIndex >= path.Count))
         {
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             return;
         }
 
-        if (path == null || waypointIndex >= path.Count)
+        // set the advanced flag to false and update current move target (ASTAR)
+        advancedThisFrame = false;
+
+        if (doAstar == false)
         {
-            // fall back to wandering
-            WanderingUpdate();
-            if (Wander)
+            advancedThisFrame = true;
+        }
+
+        if (path != null && waypointIndex < path.Count)
+        {
+            currTarget = path[waypointIndex];
+        }
+
+        // Add null check for thisScanner
+        if (thisScanner != null)
+        {
+            if (seesPlayer = thisScanner.canSeePlayer)
             {
-                GetComponent<Rigidbody2D>().velocity = transform.up * Speed;
+                lastKnownPlayerLocation = thisScanner.GetPlayerPosition();
+                SetAggroState(true);
             }
             else
             {
-                GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                SetAggroState(false);
             }
-            return;
-        }
 
-        //No reference to an active player, nothing to chase
-        if ((Player == null || !Player.gameObject.activeInHierarchy) && doChasePlayer == true)
-        {
-            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            SetAggroState(false);
-            return;
-        }
-
-        //      //If player is within aggro range, chase it!
-        //var playerDir = (Player.position - transform.position);
-
-        // Use vision-based aggro if enabled
-
-        if (CanSeePlayerVision())
-        {
-            if (Aggroed == false)
+            if(thisScanner.canSeeFlag)
             {
-                Wander = false;
-                Timer = 0;
-                Debug.Log($"{gameObject.name} detected player via VISION!");
+                flagLastKnownLocation = thisScanner.GetFlagPosition();
+                seesFlag = true;
             }
-            SetAggroState(true);
+            else
+            {
+                seesFlag = false;
+            }
         }
         else
         {
-            SetAggroState(false);
+            thisScanner = GetComponent<Scanner>();
         }
+
 
         // if this is not a leader it will be affected by the flocking logic
         if (isLeader == false)
@@ -310,15 +289,8 @@ public class EnemyLogic : MonoBehaviour
                 GetComponent<FlockingLogic>().DoAlignment(false);
                 GetComponent<FlockingLogic>().DoReducedSeparationRadius(true);
             }
-            //else 
-            //{
-            //    //
-            //    GetComponent<FlockingLogic>().DoCohesion(true);
-            //    GetComponent<FlockingLogic>().DoAlignment(true);
-            //}
 
-                // normalize the direction to our Astar target to add it to our blended direction
-                astarDir = astarDir.normalized;
+            astarDir = astarDir.normalized;
 
 
             Vector2 blendedDir = (astarDir + (Vector2)flockDir * 1.5f).normalized;
@@ -382,89 +354,9 @@ public class EnemyLogic : MonoBehaviour
     //May need to update the deaggro range...
     public void SetAggroState(bool active)
     {
-        //If we are just detecting the player, recalculate deaggro ranges
-        if (active == true && Aggroed == false)
-            RecalculateDeaggroRange();
-
-        //Set the aggro state
         Aggroed = active;
     }
 
-    //Increase the deaggro range as the player's weapons get longer ranges
-    void RecalculateDeaggroRange()
-    {
-        if (Player == null)
-            return;
-
-        //Find the maximum range of all player weapons
-        var maxBulletRange = 0.0f;
-        for (int i = 0; i < Player.childCount; i++)
-        {
-            Transform child = Player.GetChild(i);
-            WeaponLogic weapon = child.GetComponent<WeaponLogic>();
-            if (weapon != null && weapon.BulletRange > maxBulletRange)
-                maxBulletRange = weapon.BulletRange;
-        }
-
-        //If this range is less than 150% of the max weapon range, use that instead
-        if (MinDeaggroRange < maxBulletRange * 1.5f)
-            MinDeaggroRange = maxBulletRange * 1.5f;
-    }
-
-    // Check if this enemy can see the player using vision layer
-    bool CanSeePlayerVision()
-    {
-        // Safety checks
-        if (Player == null || TerrainAnalysis.Instance == null || AStarGrid.Instance == null)
-            return false;
-
-        // Get this enemy's vision layer
-        LayerVisualization visionLayer = TerrainAnalysis.Instance.GetEnemyVisionLayer(transform);
-        if (visionLayer == null || visionLayer.layer == null)
-            return false;
-
-        // Convert player world position to grid coordinates
-        Vector2 playerWorldPos = new Vector2(Player.position.x, Player.position.y);
-        Node playerNode = AStarGrid.Instance.NodeFromWorldPoint(playerWorldPos);
-
-        // Check if player position is valid on the grid
-        if (!AStarGrid.Instance.IsValidGridPos(new Vector2(playerNode.gridX, playerNode.gridY)))
-            return false;
-
-        // Get the vision value at the player's grid position
-        // Note: layer.GetValue takes (row, col) which is (gridY, gridX)
-        float visionValue = visionLayer.layer.GetValue(playerNode.gridY, playerNode.gridX);
-
-        // Player is visible if vision value exceeds threshold
-        return visionValue >= visionAggroThreshold;
-    }
-
-    //Update the wandering state
-    void WanderingUpdate()
-    {
-        //Check to see if we should wander
-        if (Wander == false && Timer >= WanderInterval)
-        {
-            if (UnityEngine.Random.Range(0.0f, 1.0f) <= WanderChance)
-            {
-                Wander = true;
-                //Pick a random direction, but account for whether the enemy is up against a wall
-                transform.up = SnapVectorToGrid(UnityEngine.Random.insideUnitCircle, MoveVerticalTimer > 0, MoveHorizontalTimer > 0);
-            }
-            Timer = 0.0f;
-        }
-
-        //Check to see if it is time to stop wandering
-        if (Wander == true && Timer >= WanderInterval / 4.0f)
-        {
-            //Stop wandering at one quarter the wander interval if aggroed, half if not
-            if (Aggroed == true || Timer >= WanderInterval / 2.0f)
-            {
-                Wander = false;
-                Timer = 0.0f;
-            }
-        }
-    }
 
     //Snap this vector to only going vertical and/or horizontal
     //This allows and enemy to move along a wall instead of getting stuck
@@ -587,19 +479,6 @@ public class EnemyLogic : MonoBehaviour
         Debug.Assert(gLeader != null);
        
         leader = gLeader;
-    }
-
-    void GetPlayerReference()
-    {
-        //Already tracking the player
-        if (Player != null)
-            return;
-
-        //Find the player
-        var player = GameObject.Find("Player(Clone)");
-        if (player == null)
-            return;
-        Player = player.transform;
     }
 
     // return a ref to this enemies leader

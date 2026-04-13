@@ -12,6 +12,16 @@ namespace UtilityAI
 
         readonly Dictionary<string, object> data = new();
 
+        public Vector2 wanderTarget = new Vector2(-1, -1);
+        public bool hasWanderTarget = false;
+
+        public bool searchingForPlayer = false;
+        public bool trackingPlayer = false;
+
+        // In Context.cs
+        public Transform playerRef = null;
+        public Vector3 lastPlayerPosition;
+        public float lastUpdateTime;
         public Context(Brain brain)
         {
             this.brain = brain;
@@ -44,7 +54,25 @@ namespace UtilityAI
             try { return (T)value; }
             catch { return default; }
         }
-        public void SetData(string key, object value) => data[key] = value;
+        public void SetData(string key, object value, float maxVal = 1.0f)
+        {
+            if (value is float f)
+            {
+                value = f / maxVal;
+            }
+            else if (value is int i)
+            {
+                float floatVal = i;
+                value = floatVal / maxVal;
+            }
+            else if (value is double d)
+            {
+                float floatVal = (float)d;
+                value = floatVal / maxVal;
+            }
+
+            data[key] = value; 
+        }
 
         public void setTarget(Vector2 newTarget)
         {

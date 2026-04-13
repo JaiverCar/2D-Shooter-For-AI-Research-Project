@@ -330,7 +330,7 @@ public class TerrainAnalysis : MonoBehaviour
         if (visionLayer.layer != null)
         {
             visionLayer.layer.Clear(0f);
-            AnalyzeAgentVision(visionLayer.layer, enemy, enemyFOVAngle);
+            EnemyFieldOfView(visionLayer.layer, enemyFOVAngle, 4.0f, 1.0f, enemy);
         }
     }
 
