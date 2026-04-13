@@ -6,7 +6,7 @@ namespace UtilityAI
 {
     public abstract class ActionAI : ScriptableObject
     {
-
+        [SerializeField]
         public Consideration consideration;
         public virtual void Init(Context context)
         {
@@ -17,9 +17,6 @@ namespace UtilityAI
 
         public int GetPriority() => consideration.priority;
 
-        public virtual void Execute(Context context)
-        {
-            // nothing in base class
-        }
+        public abstract void Execute(Context context);
     }
 }

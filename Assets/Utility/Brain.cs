@@ -20,24 +20,26 @@ namespace UtilityAI
         void Awake()
         {
             context = new Context(this);
+            
+            thisEnemy = GetComponent<EnemyLogic>();
+            
             foreach(ActionAI action in actions)
             {
                 action.Init(context);
             }
-
-            EnemyLogic thisEnemy = GetComponent<EnemyLogic>();
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (thisEnemy)
+            if (thisEnemy == null)
+            {
+                thisEnemy = GetComponent<EnemyLogic>();
+            }
+
+            if (thisEnemy != null)
             {
                 UpdateContext();
-            }
-            else
-            {
-                EnemyLogic thisEnemy = GetComponent<EnemyLogic>();
             }
 
             bestAction = null;
@@ -58,11 +60,17 @@ namespace UtilityAI
                 // If the utility value is the same, check priority
                 if (utilVal == highestUtility)
                 {
+                    if(bestAction == null)
+                    {
+                        bestAction = action;
+                        continue;
+                    }
+
                     if(priority > bestAction.GetPriority())
                     {
                         bestAction = action;
                     }
-                    if(priority == bestAction.GetPriority())
+                    else if(priority == bestAction.GetPriority())
                     {
                         // Randomize if they are the same curve and priority
                         if (UnityEngine.Random.value > 0.5f)
@@ -77,13 +85,14 @@ namespace UtilityAI
             {
                 bestAction.Execute(context);
             }
-
         }
 
         void UpdateContext()
         {
-            context.SetData("health", thisEnemy.Health);
+            context.SetData("health", thisEnemy.Health / 3.0f);
             context.SetData("speed", thisEnemy.Speed);
+            context.SetData("aggroed", thisEnemy.Aggroed);
+            context.SetData("flag", thisEnemy.doAstar);
         }
     }
 }

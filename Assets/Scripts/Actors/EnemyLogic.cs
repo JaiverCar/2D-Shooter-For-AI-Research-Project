@@ -102,8 +102,7 @@ public class EnemyLogic : MonoBehaviour
     Vector2 currTarget;
     [Header("Variables for Astar:")]
     public bool doAstar = true;
-    public Transform Flag = null;
-    public Transform AstarTarget = null;
+    public Vector2 AstarTarget = new Vector2(0, 0);
 
     //Brain
     private Brain thisBrain;
@@ -116,7 +115,7 @@ public class EnemyLogic : MonoBehaviour
 
     // Start is called before the first frame update
 
-    Transform lastTarget;
+    Vector2 lastTarget;
     Vector2 lastTargetPos;
     Vector2 lastMoveDirection = Vector2.zero;
     float directionBlendSpeed = 10.0f; // How fast to blend between old and new direction
@@ -134,9 +133,6 @@ public class EnemyLogic : MonoBehaviour
         EnemyHealthBar.MaxHealth = StartingHealth;
         EnemyHealthBar.Health = StartingHealth;
         Health = StartingHealth;
-
-        GetPlayerReference();
-        GetFlagReference();
 
         // Register this enemy with TerrainAnalysis for vision tracking
         if (TerrainAnalysis.Instance != null)
@@ -167,7 +163,7 @@ public class EnemyLogic : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        GetPlayerReference();
 
         //Don't do anything if in cinematic mode
         if (CinematicMode)
@@ -176,20 +172,14 @@ public class EnemyLogic : MonoBehaviour
             return;
         }
 
-        // Check to see if we have a reference to the player and flag
-        GetFlagReference();
-        GetPlayerReference();
-
         if (thisBrain)
         {
-            // Determine the desired target based on aggro state
-            thisBrain.context.target = (Aggroed == true && Wander == false) ? Player : Flag;
-            Transform desiredTarget = thisBrain.context.target;
+            Vector2 desiredTarget = thisBrain.context.getTarget();
 
             // Only update target if it actually changed
             if (AstarTarget != desiredTarget)
             {
-                Debug.Log(gameObject.name + " switching to " + desiredTarget.name);
+                Debug.Log(gameObject.name + " switching to " + desiredTarget);
                 AstarTarget = desiredTarget;
             }
 
@@ -197,7 +187,7 @@ public class EnemyLogic : MonoBehaviour
             repathTimer += Time.deltaTime;
 
             bool targetChanged = lastTarget != AstarTarget;
-            bool targetMoved = AstarTarget != null && Vector2.Distance(AstarTarget.position, lastTargetPos) > 0.3f;
+            bool targetMoved = AstarTarget != null && Vector2.Distance(AstarTarget, lastTargetPos) > 0.3f;
 
             // Check if we've reached the current waypoint (or path is invalid)
             bool atWaypoint = path == null || waypointIndex >= path.Count ||
@@ -218,9 +208,9 @@ public class EnemyLogic : MonoBehaviour
                  (repathTimer >= repathInterval && targetMoved && atWaypoint)))
             {
                 lastTarget = AstarTarget;
-                lastTargetPos = AstarTarget.position;
+                lastTargetPos = AstarTarget;
 
-                List<Vector2> newPath = Pathfinder.Instance.FindPath(transform.position, AstarTarget.position);
+                List<Vector2> newPath = Pathfinder.Instance.FindPath(transform.position, AstarTarget);
                 if (newPath != null && newPath.Count > 1)
                 {
                     newPath.RemoveAt(0);
@@ -331,7 +321,7 @@ public class EnemyLogic : MonoBehaviour
                 astarDir = astarDir.normalized;
 
 
-            Vector2 blendedDir = (astarDir + (Vector2)flockDir * 1.5f).normalized; // Increase from 0.3 to 1.5
+            Vector2 blendedDir = (astarDir + (Vector2)flockDir * 1.5f).normalized;
 
             if (HasReachedMovementTarget(movementTargetLocation) == false)
             {
@@ -398,33 +388,6 @@ public class EnemyLogic : MonoBehaviour
 
         //Set the aggro state
         Aggroed = active;
-    }
-
-    //Get a reference to the player
-    void GetFlagReference()
-    {
-        //Already tracking the player
-        if (Flag != null)
-            return;
-
-        //Find the player
-        var flag = GameObject.Find("Flag");
-        if (flag == null)
-            return;
-        Flag = flag.transform;
-    }
-
-    void GetPlayerReference()
-    {
-        //Already tracking the player
-        if (Player != null)
-            return;
-
-        //Find the player
-        var player = GameObject.Find("Player(Clone)");
-        if (player == null)
-            return;
-        Player = player.transform;
     }
 
     //Increase the deaggro range as the player's weapons get longer ranges
@@ -624,6 +587,19 @@ public class EnemyLogic : MonoBehaviour
         Debug.Assert(gLeader != null);
        
         leader = gLeader;
+    }
+
+    void GetPlayerReference()
+    {
+        //Already tracking the player
+        if (Player != null)
+            return;
+
+        //Find the player
+        var player = GameObject.Find("Player(Clone)");
+        if (player == null)
+            return;
+        Player = player.transform;
     }
 
     // return a ref to this enemies leader

@@ -4,8 +4,10 @@ using UnityEngine;
 
 namespace UtilityAI
 {
+    [System.Serializable]
     public class Consideration
     {
+        [SerializeField]
         public AnimationCurve curve;
         public string contextKey;
         public int priority = 0;
