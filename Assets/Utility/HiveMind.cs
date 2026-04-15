@@ -28,9 +28,12 @@ namespace UtilityAI
 
         private void Update()
         {
-            foreach (SquadLeader leader in activeSquadLeaders)
+            if (knowPlayerLocation == true)
             {
-                leader.UpdateAggro(knowPlayerLocation, lastKnownPlayerPosition);
+                foreach (SquadLeader leader in activeSquadLeaders)
+                {
+                    leader.UpdateAggro(knowPlayerLocation, lastKnownPlayerPosition);
+                }
             }
 
             knowPlayerLocation = false;

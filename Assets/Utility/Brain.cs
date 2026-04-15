@@ -42,11 +42,6 @@ namespace UtilityAI
                 thisEnemy = GetComponent<EnemyLogic>();
             }
 
-            if (thisEnemy != null)
-            {
-                UpdateContext();
-            }
-
             bestAction = null;
             float highestUtility = 0.0f;
 
@@ -93,6 +88,11 @@ namespace UtilityAI
             if (bestAction != null)
             {
                 bestAction.Execute(context);
+            }
+
+            if (thisEnemy != null)
+            {
+                UpdateContext();
             }
         }
 
