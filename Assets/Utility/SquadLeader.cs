@@ -16,6 +16,8 @@ public class SquadLeader : MonoBehaviour
         if(mainHiveMind != null)
         {
             mainHiveMind.RegisterSquadLeader(this);
+
+            GetComponent<Brain>().hiveMind = mainHiveMind;
         }
         
         // Connect all subordinates

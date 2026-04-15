@@ -113,6 +113,7 @@ namespace UtilityAI
                 // Report what I see back to the hive
                 if (context.playerRef != null)
                 {
+                    Debug.Log("test");
                     //hiveMind.UpdateKnowledge(context);
                 }
                 

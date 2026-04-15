@@ -15,8 +15,11 @@ GameObject:
   - component: {fileID: 6048948920214717233}
   - component: {fileID: 3055895041805524547}
   - component: {fileID: 7201801901939466692}
+  - component: {fileID: 2291430317323205923}
+  - component: {fileID: 2061794123979596476}
+  - component: {fileID: 1959053553964217169}
   m_Layer: 0
-  m_Name: BossEnemy
+  m_Name: LeaderEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -31,7 +34,7 @@ Transform:
   m_GameObject: {fileID: 6048948920214717231}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 7, y: 9, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1914942896081386031}
@@ -144,6 +147,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isLeader: 1
   isGrunt: 0
+  doChasePlayer: 1
   movementTargetTile: {x: 0, y: 0}
   Speed: 4
   StartingHealth: 20
@@ -155,11 +159,13 @@ MonoBehaviour:
   visionAggroThreshold: 0.1
   echoRadius: 0
   Aggroed: 0
-  Wander: 0
-  Player: {fileID: 0}
   repathInterval: 0.2
-  Flag: {fileID: 0}
-  AstarTarget: {fileID: 0}
+  doAstar: 1
+  AstarTarget: {x: 0, y: 0}
+  seesFlag: 0
+  flagLastKnownLocation: {x: 0, y: 0}
+  seesPlayer: 0
+  lastKnownPlayerLocation: {x: 0, y: 0}
   CinematicMode: 0
 --- !u!114 &3055895041805524547
 MonoBehaviour:
@@ -189,6 +195,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tetherRadius: 15
+--- !u!114 &2291430317323205923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6048948920214717231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19fad58a4d28e6449a197edc5ee7340, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actions:
+  - {fileID: 11400000, guid: 0780abc32b336d649a14fdde631d7a28, type: 2}
+  - {fileID: 11400000, guid: 3b39bea12d0537043901360dd40ef67b, type: 2}
+  - {fileID: 11400000, guid: b0c3200fccc565a49967c3cfb8b3e5e2, type: 2}
+  - {fileID: 11400000, guid: 5d65423a73ac6604d81540dae63e5b86, type: 2}
+  thisEnemy: {fileID: 0}
+  squad: 0
+  hiveMind: {fileID: 0}
+  squadLeader: {fileID: 0}
+  personalSmartness: 1
+--- !u!114 &2061794123979596476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6048948920214717231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ba0ef11c96d89e42b54851960fc95ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visionAggroThreshold: 0.1
+  canSeePlayer: 0
+  canSeeFlag: 0
+--- !u!114 &1959053553964217169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6048948920214717231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 235a30cc77f45f444943f41cbe54ea02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainHiveMind: {fileID: 0}
+  squadType: 0
+  subordinates: []
 --- !u!1001 &1332717448260522274
 PrefabInstance:
   m_ObjectHideFlags: 0
