@@ -149,7 +149,7 @@ MonoBehaviour:
   isGrunt: 0
   doChasePlayer: 1
   movementTargetTile: {x: 0, y: 0}
-  Speed: 4
+  Speed: 2
   StartingHealth: 20
   AggroRange: 12
   WanderInterval: 2

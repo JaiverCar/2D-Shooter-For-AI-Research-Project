@@ -26,10 +26,24 @@ public class SquadLeader : MonoBehaviour
             ConnectSubordinate(brain);
         }
     }
+
+    public void UpdateAggro(bool knowPlayerLocation, Vector2 lastKnownFlagPosition)
+    {
+        //update our own brain
+        GetComponent<Brain>().context.SetData("aggroed", knowPlayerLocation);
+        GetComponent<Brain>().context.lastPlayerPosition = lastKnownFlagPosition;
+
+
+        //update all our subordinates
+        foreach (var brain in subordinates)
+        {
+            brain.context.SetData("aggroed", knowPlayerLocation);
+            brain.context.lastPlayerPosition = lastKnownFlagPosition;
+        }
+    }
     
     public void ConnectSubordinate(Brain brain)
     {
-        subordinates.Add(brain);
         brain.squadLeader = this; // Give them reference to me
         brain.squad = squadType;
         
@@ -38,7 +52,12 @@ public class SquadLeader : MonoBehaviour
             brain.hiveMind = mainHiveMind; // Give them access to main hive
         }
     }
-    
+
+    public void RemoveSubordinate(Brain brain)
+    {
+        subordinates.Remove(brain);
+    }
+
     void OnDestroy()
     {
         // Squad leader died - disconnect all subordinates
