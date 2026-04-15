@@ -16,6 +16,11 @@ namespace UtilityAI
 
         public EnemyLogic thisEnemy;
 
+        public HiveMind.squads squad;
+        public HiveMind hiveMind; // Reference to MAIN hive mind
+        public SquadLeader squadLeader; // Reference to my squad leader (relay)
+        public float personalSmartness = 1.0f;
+
         // Start is called before the first frame update
         void Awake()
         {
@@ -47,6 +52,10 @@ namespace UtilityAI
 
             foreach(ActionAI action in actions)
             {
+                // Skip if action isn't allowed for my squad
+                if (hiveMind != null && !action.IsAllowedForSquad(squad))
+                    continue;
+        
                 float utilVal = action.CalculateUtility(context);
                 int priority = (int)action.GetPriority();
 
@@ -89,10 +98,29 @@ namespace UtilityAI
 
         void UpdateContext()
         {
+            // Personal data
             context.SetData("health", thisEnemy.Health, thisEnemy.StartingHealth);
             context.SetData("speed", thisEnemy.Speed);
             context.SetData("aggroed", thisEnemy.Aggroed);
             context.SetData("flag", thisEnemy.seesFlag);
+            
+            // Hive mind integration
+            if (hiveMind != null)
+            {
+                // Get shared knowledge
+                //hiveMind.GetKnowledge(context);
+                
+                // Report what I see back to the hive
+                if (context.playerRef != null)
+                {
+                    //hiveMind.UpdateKnowledge(context);
+                }
+                
+                // Add hive stats to context for actions to use
+                //context.SetData("hive_smartness", hiveMind.smartness);
+                //context.SetData("hive_coordination", hiveMind.coordination);
+                //context.SetData("squad_assignment", (int)squad);
+            }
         }
     }
 }

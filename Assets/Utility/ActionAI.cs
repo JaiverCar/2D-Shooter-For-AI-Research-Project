@@ -17,6 +17,11 @@ namespace UtilityAI
 
         public int GetPriority() => consideration.priority;
 
+        public virtual bool IsAllowedForSquad(HiveMind.squads squad) 
+        { 
+            return true; // Default: all actions work for all squads
+        }
+
         public abstract void Execute(Context context);
     }
 }
