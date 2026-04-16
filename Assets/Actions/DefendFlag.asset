@@ -40,3 +40,6 @@ MonoBehaviour:
     contextKey: 
     priority: 10
   defendingDistance: 3
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 128

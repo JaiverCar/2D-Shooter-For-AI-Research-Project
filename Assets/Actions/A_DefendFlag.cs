@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace UtilityAI
 {
@@ -9,6 +10,7 @@ namespace UtilityAI
         private Transform flagRef = null;
 
         public int defendingDistance = 1;
+        public LayerMask obstacleLayer;
 
 
         public override void Init(Context context)
@@ -35,14 +37,15 @@ namespace UtilityAI
             Vector2 ourGridPos = new Vector2(ourNode.gridX, ourNode.gridY);
 
 
-            Vector2 defenseGridPos = GetDefendingGridPos(flagRow, flagCol, ourGridPos, AStarGrid.Instance);
+            Vector2 defenseGridPos = GetDefendingGridPos(flagRow, flagCol, ourGridPos, context.brain, AStarGrid.Instance);
 
             Node node = AStarGrid.Instance.GridGet(defenseGridPos);
 
             context.setTarget(node.worldPosition);
         }
 
-        private Vector2 GetDefendingGridPos(int flagRow, int flagCol, Vector2 ourGridPos , AStarGrid grid)
+
+        private Vector2 GetDefendingGridPos(int flagRow, int flagCol, Vector2 ourGridPos, Brain ourBrain, AStarGrid grid)
         {
             // find the closest point on the defence perimeter
             Vector2 closestNode = Vector2.zero;
@@ -61,20 +64,40 @@ namespace UtilityAI
                     // check if this is a valid node to defend on
                     if (AStarGrid.Instance.IsWalkable(flagCol + i, flagRow + j) && flagDist == defendingDistance)
                     {
-                        float ourDist = Vector2.Distance(checkPos, ourGridPos);
+                        Node checkNode = grid.GridGet(checkPos);
+                        Collider2D enemyCollider = Physics2D.OverlapBox(checkNode.worldPosition, Vector2.one * 0.5f, 0f, obstacleLayer);
 
-                        // check if this node is closer than our closest node
-                        if (ourDist < closestDist)
+                        bool occupied = false;
+
+                        if (enemyCollider != null)
                         {
-                            closestDist = ourDist;
-                            closestNode = checkPos;
+                            Brain otherBrain = enemyCollider.GetComponent<Brain>();
+
+                            if (otherBrain != ourBrain)
+                            {
+                                occupied = true;
+                            }
                         }
+                        
+                        if (occupied == false)
+                        {
+                            float ourDist = Vector2.Distance(checkPos, ourGridPos);
+
+                            // check if this node is closer than our closest node
+                            if (ourDist < closestDist)
+                            {
+                                closestDist = ourDist;
+                                closestNode = checkPos;
+                            }
+                        }
+
                     }
                 }
             }
 
             return closestNode;
         }
+
 
         void GetFlagReference()
         {
