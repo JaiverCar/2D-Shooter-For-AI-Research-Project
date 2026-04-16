@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 2291430317323205923}
   - component: {fileID: 2061794123979596476}
   - component: {fileID: 1959053553964217169}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: LeaderEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -344,6 +344,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnemyWeapon (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 3395547099781505582, guid: 41960cec8f26d79439a69f015f23fd92,
+        type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 41960cec8f26d79439a69f015f23fd92, type: 3}
 --- !u!4 &4423004795927606025 stripped
@@ -448,6 +453,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: EnemyWeapon (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3395547099781505582, guid: 41960cec8f26d79439a69f015f23fd92,
+        type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 41960cec8f26d79439a69f015f23fd92, type: 3}
@@ -554,6 +564,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnemyWeapon
       objectReference: {fileID: 0}
+    - target: {fileID: 3395547099781505582, guid: 41960cec8f26d79439a69f015f23fd92,
+        type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 41960cec8f26d79439a69f015f23fd92, type: 3}
 --- !u!4 &1914942896081386031 stripped
@@ -569,10 +584,20 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 6048948920214717229}
     m_Modifications:
+    - target: {fileID: 1248845439659860957, guid: 8b23492cb9efaae49ace4f65e89236ae,
+        type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1248845440106708752, guid: 8b23492cb9efaae49ace4f65e89236ae,
         type: 3}
       propertyPath: m_Name
       value: EnemyHealthBar
+      objectReference: {fileID: 0}
+    - target: {fileID: 1248845440106708752, guid: 8b23492cb9efaae49ace4f65e89236ae,
+        type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1248845440106708755, guid: 8b23492cb9efaae49ace4f65e89236ae,
         type: 3}
