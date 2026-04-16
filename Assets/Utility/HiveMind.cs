@@ -26,6 +26,14 @@ namespace UtilityAI
             Instance = this;
         }
 
+        private void Start()
+        {
+            // we know the starting position of our flag
+            var flag = GameObject.Find("Flag");
+
+            lastKnownFlagPosition = flag.transform.position;
+        }
+
         private void Update()
         {
             if (knowPlayerLocation == true)
