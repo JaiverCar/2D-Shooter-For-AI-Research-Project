@@ -98,6 +98,18 @@ namespace UtilityAI
             return closestNode;
         }
 
+        public override bool IsAllowedForSquad(HiveMind.squads squad)
+        {
+            bool r = false;
+            
+            // only allow this action for the flag defenders
+            if (squad == HiveMind.squads.s_FlagDefenders)
+            {
+                r = true;
+            }
+            return r;
+        }
+
 
         void GetFlagReference()
         {
