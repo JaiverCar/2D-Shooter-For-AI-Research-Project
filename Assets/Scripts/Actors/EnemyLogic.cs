@@ -95,6 +95,7 @@ public class EnemyLogic : MonoBehaviour
     [Header("Variables for Astar:")]
     public bool doAstar = true;
     public Vector2 AstarTarget = new Vector2(0, 0);
+    public bool drawAStarPath = false;
 
     //Brain
     private Brain thisBrain;
@@ -490,7 +491,7 @@ public class EnemyLogic : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (Toggles.Instance.DrawAStarPaths() == true)
+        if (drawAStarPath == true)
         {
             if (path == null || path.Count == 0) return;
 

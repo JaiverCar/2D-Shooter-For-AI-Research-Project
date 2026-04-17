@@ -6,9 +6,6 @@ public class Toggles : MonoBehaviour
 {
     public static Toggles Instance; // Singleton
 
-    private bool drawAStar = false;
-    private bool drawGrid = false;
-
     void Awake()
     {
         Instance = this;
@@ -17,7 +14,15 @@ public class Toggles : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        var gridSystem = GameObject.Find("GridSystem");
+        gridSystem.GetComponent<AStarGrid>().drawGrid = false;
 
+        var enemies = FindObjectsOfType<EnemyLogic>();
+
+        foreach (EnemyLogic enemy in enemies)
+        {
+            enemy.drawAStarPath = false;
+        }
     }
 
     // Update is called once per frame
@@ -35,23 +40,19 @@ public class Toggles : MonoBehaviour
         camera.GetComponent<CameraFollow>().SetCameraSpectatePlayer(!value);
     }
 
-    public bool DrawAStarPaths()
-    {
-        return drawAStar;
-    }
-
     public void ToggleDrawAStar()
     {
-        drawAStar = !drawAStar;
-    }
+        var enemies = FindObjectsOfType<EnemyLogic>();
 
-    public bool DrawGrid()
-    {
-        return drawGrid;
+        foreach (EnemyLogic enemy in enemies)
+        {
+            enemy.drawAStarPath = !enemy.drawAStarPath;
+        }
     }
 
     public void ToggleDrawGrid()
     {
-        drawGrid = !drawGrid;
+        var gridSystem = GameObject.Find("GridSystem");
+        gridSystem.GetComponent<AStarGrid>().drawGrid = !gridSystem.GetComponent<AStarGrid>().drawGrid;
     }
 }

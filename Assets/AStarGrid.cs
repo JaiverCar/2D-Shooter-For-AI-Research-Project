@@ -99,6 +99,8 @@ public class AStarGrid : MonoBehaviour
 {
     public static AStarGrid Instance;
 
+    public bool drawGrid = false;
+
     [Header("Grid Settings")]
     public Vector2 gridWorldSize = new Vector2(20, 20); // how much of the world to cover
     public float nodeRadius = 0.5f;
@@ -223,7 +225,7 @@ public class AStarGrid : MonoBehaviour
     // Visualize in editor
     void OnDrawGizmos()
     {
-        if (Toggles.Instance.DrawGrid() == true)
+        if (drawGrid == true)
         {
             // Always draw the boundary
             Gizmos.color = Color.yellow;
