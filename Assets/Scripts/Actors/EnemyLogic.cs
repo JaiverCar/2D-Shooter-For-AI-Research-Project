@@ -490,30 +490,33 @@ public class EnemyLogic : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (path == null || path.Count == 0) return;
-
-        Gizmos.color = Color.green;
-        for (int i = 0; i < path.Count - 1; i++)
-            Gizmos.DrawLine(path[i], path[i + 1]);
-
-        Gizmos.color = Color.red;
-        if (waypointIndex < path.Count)
-            Gizmos.DrawSphere(path[waypointIndex], 0.15f);
-
-
-        if (path == null || path.Count == 0) return;
-
-        for (int i = 0; i < path.Count; i++)
+        if (Toggles.Instance.DrawAStarPaths() == true)
         {
-            // color goes from red at start to green at end
-            Gizmos.color = Color.Lerp(Color.red, Color.green, (float)i / path.Count);
-            Gizmos.DrawSphere(path[i], 0.1f);
+            if (path == null || path.Count == 0) return;
 
-            if (i < path.Count - 1)
+            Gizmos.color = Color.green;
+            for (int i = 0; i < path.Count - 1; i++)
                 Gizmos.DrawLine(path[i], path[i + 1]);
 
-            // draw the index number
-            UnityEditor.Handles.Label(path[i], i.ToString());
+            Gizmos.color = Color.red;
+            if (waypointIndex < path.Count)
+                Gizmos.DrawSphere(path[waypointIndex], 0.15f);
+
+
+            if (path == null || path.Count == 0) return;
+
+            for (int i = 0; i < path.Count; i++)
+            {
+                // color goes from red at start to green at end
+                Gizmos.color = Color.Lerp(Color.red, Color.green, (float)i / path.Count);
+                Gizmos.DrawSphere(path[i], 0.1f);
+
+                if (i < path.Count - 1)
+                    Gizmos.DrawLine(path[i], path[i + 1]);
+
+                // draw the index number
+                UnityEditor.Handles.Label(path[i], i.ToString());
+            }
         }
     }
 

@@ -223,58 +223,61 @@ public class AStarGrid : MonoBehaviour
     // Visualize in editor
     void OnDrawGizmos()
     {
-        // Always draw the boundary
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, gridWorldSize.y, 1));
-
-        // Build a preview grid in edit mode
-        float nodeDiameter = nodeRadius * 2;
-        int sizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
-        int sizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
-
-        Vector2 bottomLeft = (Vector2)transform.position
-                           - Vector2.right * gridWorldSize.x / 2
-                           - Vector2.up * gridWorldSize.y / 2;
-
-        for (int x = 0; x < sizeX; x++)
+        if (Toggles.Instance.DrawGrid() == true)
         {
-            for (int y = 0; y < sizeY; y++)
+            // Always draw the boundary
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, gridWorldSize.y, 1));
+
+            // Build a preview grid in edit mode
+            float nodeDiameter = nodeRadius * 2;
+            int sizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
+            int sizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
+
+            Vector2 bottomLeft = (Vector2)transform.position
+                               - Vector2.right * gridWorldSize.x / 2
+                               - Vector2.up * gridWorldSize.y / 2;
+
+            for (int x = 0; x < sizeX; x++)
             {
-                Vector2 worldPoint = bottomLeft
-                    + Vector2.right * (x * nodeDiameter + nodeRadius)
-                    + Vector2.up * (y * nodeDiameter + nodeRadius);
+                for (int y = 0; y < sizeY; y++)
+                {
+                    Vector2 worldPoint = bottomLeft
+                        + Vector2.right * (x * nodeDiameter + nodeRadius)
+                        + Vector2.up * (y * nodeDiameter + nodeRadius);
 
-                bool walkable = Physics2D.OverlapBox(worldPoint, Vector2.one * nodeRadius * 1.5f, 0f, obstacleLayer) == null;
+                    bool walkable = Physics2D.OverlapBox(worldPoint, Vector2.one * nodeRadius * 1.5f, 0f, obstacleLayer) == null;
 
-                Gizmos.color = walkable
-                    ? new Color(0f, 1f, 0f, 0.15f)
-                    : new Color(1f, 0f, 0f, 0.5f);
+                    Gizmos.color = walkable
+                        ? new Color(0f, 1f, 0f, 0.15f)
+                        : new Color(1f, 0f, 0f, 0.5f);
 
-                Gizmos.DrawCube(worldPoint, Vector2.one * (nodeDiameter - 0.05f));
+                    Gizmos.DrawCube(worldPoint, Vector2.one * (nodeDiameter - 0.05f));
+                }
+
             }
 
-        }
-
-        if (grid != null)
-        {
-            foreach (Node n in grid)
+            if (grid != null)
             {
-                if (!n.walkable) continue;
-                bool nextToWall = false;
-                for (int dx = -1; dx <= 1; dx++)
-                    for (int dy = -1; dy <= 1; dy++)
-                    {
-                        if (dx == 0 && dy == 0) continue;
-                        int cx = n.gridX + dx;
-                        int cy = n.gridY + dy;
-                        if (cx >= 0 && cx < gridSizeX && cy >= 0 && cy < gridSizeY)
-                            if (!grid[cx, cy].walkable)
-                                nextToWall = true;
-                    }
-                if (nextToWall)
+                foreach (Node n in grid)
                 {
-                    Gizmos.color = Color.cyan;
-                    Gizmos.DrawSphere(n.worldPosition, 0.1f);
+                    if (!n.walkable) continue;
+                    bool nextToWall = false;
+                    for (int dx = -1; dx <= 1; dx++)
+                        for (int dy = -1; dy <= 1; dy++)
+                        {
+                            if (dx == 0 && dy == 0) continue;
+                            int cx = n.gridX + dx;
+                            int cy = n.gridY + dy;
+                            if (cx >= 0 && cx < gridSizeX && cy >= 0 && cy < gridSizeY)
+                                if (!grid[cx, cy].walkable)
+                                    nextToWall = true;
+                        }
+                    if (nextToWall)
+                    {
+                        Gizmos.color = Color.cyan;
+                        Gizmos.DrawSphere(n.worldPosition, 0.1f);
+                    }
                 }
             }
         }
