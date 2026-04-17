@@ -28,9 +28,9 @@ public class CameraFollow : MonoBehaviour
     //Percentage to interpolate zooming out over one second
     private float ZoomOutInterpolant = 1.0f;
     //Percentage to interpolate zooming in over one second
-    private float ZoomInInterpolant = 0.1f;
+    private float ZoomInInterpolant = 0.6f;
     //Map mode zoom size
-    private float MapModeZoom = 35.0f; //This might need to be bigger if you have a large level
+    private float MapModeZoom = 26.0f; //This might need to be bigger if you have a large level
     //Speed for when manually moving the camera
     private float CameraMoveSpeed = 5.0f;
     //////////////////////////////////////////////////////////////////////////
@@ -42,6 +42,8 @@ public class CameraFollow : MonoBehaviour
     //Calculated speed limit used to enforce maximum acceleration
     private float SpeedLimit = 0.0f;
 
+    private bool SpectatePlayer = false;
+
     //Fixed update should always be used for smoother camera movement
     void FixedUpdate()
     {
@@ -49,8 +51,15 @@ public class CameraFollow : MonoBehaviour
         if (ObjectToFollow == null)
             return;
 
-        // if not pressing C
-        if (Input.GetKey(KeyCode.C) == false)
+        if (SpectatePlayer == false)
+        {
+            transform.position = new Vector3(0, 0, transform.position.z);
+
+            GetComponent<Camera>().orthographicSize = MapModeZoom;
+        }
+
+        // if not pressing C and we are spectating the player
+        if (Input.GetKey(KeyCode.C) == false && SpectatePlayer == true)
         {
             //Follow the camera target
             FollowTarget();
@@ -58,7 +67,8 @@ public class CameraFollow : MonoBehaviour
             //Adjust the zoom level
             AdjustZoom();
         }
-        else
+        // if we are pressing C and are spectating the player
+        else if(Input.GetKey(KeyCode.C) == true && SpectatePlayer == true)
         {
             if (Input.GetKey(KeyCode.UpArrow)) // move camera up
             {
@@ -142,5 +152,14 @@ public class CameraFollow : MonoBehaviour
             GetComponent<Camera>().orthographicSize += zoomAdjust;
         else //Don't overshoot the target zoom level
             GetComponent<Camera>().orthographicSize = targetZoom;
+    }
+
+    public void SetCameraSpectatePlayer(bool doSpectatePlayer)
+    {
+        SpectatePlayer = doSpectatePlayer;
+    }
+    public bool GetCameraSpectatePlayer()
+    {
+        return SpectatePlayer;
     }
 }

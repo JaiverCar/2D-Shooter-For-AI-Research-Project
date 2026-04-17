@@ -44,25 +44,25 @@ public class LeaderLogic : MonoBehaviour
         return tetherRadius;
     }
 
-    private float segments = 60.0f;
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        float angleStep = 360.0f / segments;
-        Vector3 prevPoint = transform.position + new Vector3(tetherRadius, 0, 0);
+    //private float segments = 60.0f;
+    //private void OnDrawGizmos()
+    //{
+    //    Gizmos.color = Color.red;
+    //    float angleStep = 360.0f / segments;
+    //    Vector3 prevPoint = transform.position + new Vector3(tetherRadius, 0, 0);
 
-        for (int i = 1; i <= segments; i++)
-        {
-            float angle = Mathf.Deg2Rad * angleStep * i;
+    //    for (int i = 1; i <= segments; i++)
+    //    {
+    //        float angle = Mathf.Deg2Rad * angleStep * i;
 
-            Vector3 newPoint = transform.position + new Vector3(
-                Mathf.Cos(angle) * tetherRadius,
-                Mathf.Sin(angle) * tetherRadius,
-                0
-            );
+    //        Vector3 newPoint = transform.position + new Vector3(
+    //            Mathf.Cos(angle) * tetherRadius,
+    //            Mathf.Sin(angle) * tetherRadius,
+    //            0
+    //        );
 
-            Gizmos.DrawLine(prevPoint, newPoint);
-            prevPoint = newPoint;
-        }
-    }
+    //        Gizmos.DrawLine(prevPoint, newPoint);
+    //        prevPoint = newPoint;
+    //    }
+    //}
 }

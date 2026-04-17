@@ -21,7 +21,7 @@ public class CameraTarget : MonoBehaviour
     //////////////////////////////////////////////////////////////////////////
 
     //Minimum zoom, regardless of other calculations
-    private float MinZoom = 5.0f;
+    private float MinZoom = 8.0f;
     //Maximum zoom, regarless of other calculations.
     private float MaxZoom = 20.0f; //Note that you might need to increase this if the player is really fast.
     //When calculating the zoom level, we might want it to

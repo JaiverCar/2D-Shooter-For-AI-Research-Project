@@ -417,62 +417,62 @@ public class FlockingLogic : MonoBehaviour
     }
 
 
-    private float segments = 60.0f;
-    private void OnDrawGizmos()
-    {
-        //if (this.name == "BaseEnemy (3)")
-        //{
-        //    Gizmos.color = Color.yellow;
-        //    Gizmos.DrawWireSphere(test, 0.5f);
-        //}
+    //private float segments = 60.0f;
+    //private void OnDrawGizmos()
+    //{
+    //    //if (this.name == "BaseEnemy (3)")
+    //    //{
+    //    //    Gizmos.color = Color.yellow;
+    //    //    Gizmos.DrawWireSphere(test, 0.5f);
+    //    //}
 
 
-        if (doCohesion == true)
-        {
-            Gizmos.color = Color.green;
-            float angleStep = 360.0f / segments;
-            Vector3 prevPoint = transform.position + new Vector3(echoRadius, 0, 0);
+    //    if (doCohesion == true)
+    //    {
+    //        Gizmos.color = Color.green;
+    //        float angleStep = 360.0f / segments;
+    //        Vector3 prevPoint = transform.position + new Vector3(echoRadius, 0, 0);
 
-            for (int i = 1; i <= segments; i++)
-            {
-                float angle = Mathf.Deg2Rad * angleStep * i;
+    //        for (int i = 1; i <= segments; i++)
+    //        {
+    //            float angle = Mathf.Deg2Rad * angleStep * i;
 
-                Vector3 newPoint = transform.position + new Vector3(
-                    Mathf.Cos(angle) * echoRadius,
-                    Mathf.Sin(angle) * echoRadius,
-                    0
-                );
+    //            Vector3 newPoint = transform.position + new Vector3(
+    //                Mathf.Cos(angle) * echoRadius,
+    //                Mathf.Sin(angle) * echoRadius,
+    //                0
+    //            );
 
-                Gizmos.DrawLine(prevPoint, newPoint);
-                prevPoint = newPoint;
-            }
-        }
+    //            Gizmos.DrawLine(prevPoint, newPoint);
+    //            prevPoint = newPoint;
+    //        }
+    //    }
 
-        if (doSeparation == true)
-        {
-            float radius = maxSeparationRadius;
+    //    if (doSeparation == true)
+    //    {
+    //        float radius = maxSeparationRadius;
 
-            if (doReducedSeparationRadius == true)
-            {
-                radius = maxSeparationRadius * separationRadiusReductionRatio;
-            }
+    //        if (doReducedSeparationRadius == true)
+    //        {
+    //            radius = maxSeparationRadius * separationRadiusReductionRatio;
+    //        }
 
-            Gizmos.color = Color.red;
-            float angleStep = 360.0f / segments;
-            Vector3 prevPoint = transform.position + new Vector3(radius, 0, 0);
-            for (int i = 1; i <= segments; i++)
-            {
-                float angle = Mathf.Deg2Rad * angleStep * i;
+    //        Gizmos.color = Color.red;
+    //        float angleStep = 360.0f / segments;
+    //        Vector3 prevPoint = transform.position + new Vector3(radius, 0, 0);
+    //        for (int i = 1; i <= segments; i++)
+    //        {
+    //            float angle = Mathf.Deg2Rad * angleStep * i;
 
-                Vector3 newPoint = transform.position + new Vector3(
-                    Mathf.Cos(angle) * radius,
-                    Mathf.Sin(angle) * radius,
-                    0
-                );
+    //            Vector3 newPoint = transform.position + new Vector3(
+    //                Mathf.Cos(angle) * radius,
+    //                Mathf.Sin(angle) * radius,
+    //                0
+    //            );
 
-                Gizmos.DrawLine(prevPoint, newPoint);
-                prevPoint = newPoint;
-            }
-        }
-    }
+    //            Gizmos.DrawLine(prevPoint, newPoint);
+    //            prevPoint = newPoint;
+    //        }
+    //    }
+    //}
 }
