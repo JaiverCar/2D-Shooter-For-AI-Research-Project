@@ -215,6 +215,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b0c3200fccc565a49967c3cfb8b3e5e2, type: 2}
   - {fileID: 11400000, guid: 5d65423a73ac6604d81540dae63e5b86, type: 2}
   - {fileID: 11400000, guid: 33cd0a2bf107936498bdf4332ec43039, type: 2}
+  - {fileID: 11400000, guid: d4e6b8b6c4a5c0347a00dada0b27ac2e, type: 2}
   thisEnemy: {fileID: 0}
   squad: 2
   personalConnection: 1

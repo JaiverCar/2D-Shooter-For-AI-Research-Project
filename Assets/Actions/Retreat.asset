@@ -48,7 +48,10 @@ MonoBehaviour:
       m_RotationOrder: 4
     contextKey: health
     priority: 1
-    allowedSquads: 00000000010000000200000003000000
+    allowedSquads: 0000000001000000020000000300000004000000
   searchRadius: 15
   maxAcceptableVisibility: 0.3
   visibilityWeight: 0.6
+  arrivalThreshold: 0.3
+  healDelay: 3
+  healAmount: 1
