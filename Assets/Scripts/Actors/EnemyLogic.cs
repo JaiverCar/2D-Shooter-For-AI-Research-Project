@@ -132,6 +132,9 @@ public class EnemyLogic : MonoBehaviour
 
     public bool hasFlag = false;
 
+    float prevSignal;
+    float signal;
+
     public static event Action<EnemyLogic> OnEnemyDied;
 
     void Start()
@@ -221,9 +224,16 @@ public class EnemyLogic : MonoBehaviour
             bool targetMovedEnough =
                 (targetGridPos - lastTargetGridPos).sqrMagnitude >= repathThresholdSqr;
 
+            signal = Mathf.Clamp01(thisBrain.personalConnection * (HiveMind.Instance != null ? HiveMind.Instance.globalSignalStrength : 1f));
+
             bool shouldRepath =
                 path == null ||
-                (cooldownReady && atWaypoint && (targetMovedEnough || atEndOfPath));
+                (cooldownReady && atWaypoint && (targetMovedEnough || atEndOfPath) ||
+                (signal != prevSignal));
+
+            prevSignal = signal;
+
+            //used for stupidity and weight
 
             if (AstarTarget != Vector2.zero && shouldRepath)
             {
@@ -235,9 +245,6 @@ public class EnemyLogic : MonoBehaviour
                 lastTargetGridPos = targetGridPos;
                 repathTimer = 0f;
 
-                // Derive path quality from signal: weak signal = greedy + noisy, strong = optimal + precise
-                float signal = Mathf.Clamp01(
-                    thisBrain.personalConnection * (HiveMind.Instance != null ? HiveMind.Instance.globalSignalStrength : 1f));
                 float pathWeight = Mathf.Lerp(2.0f, 1.0f, signal);
                 float pathStupidity = Mathf.Lerp(10.0f, 0.0f, signal);
 
