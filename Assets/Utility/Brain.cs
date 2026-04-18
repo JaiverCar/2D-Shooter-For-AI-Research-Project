@@ -15,6 +15,8 @@ namespace UtilityAI
         ActionAI bestAction;
         ActionAI previousAction;
 
+        public string CurrentActionName => bestAction != null ? bestAction.name : "None";
+
         public EnemyLogic thisEnemy;
 
         public HiveMind.squads squad = HiveMind.squads.s_Scouts;
@@ -26,6 +28,8 @@ namespace UtilityAI
         float hiveCheckTimer = 0f;
         const float hiveCheckInterval = 10f;
 
+        public Color ogColor;
+
         void Awake()
         {
             context = new Context(this);
@@ -36,6 +40,8 @@ namespace UtilityAI
             {
                 action.Init(context);
             }
+
+            ogColor = thisEnemy.GetComponent<SpriteRenderer>().color;
         }
 
         void Start()
@@ -57,14 +63,42 @@ namespace UtilityAI
 
             if (isConnectedToHive == false)
             {
+                thisEnemy.GetComponent<SpriteRenderer>().color = Color.red;
                 squad = HiveMind.squads.s_NoSquad;
+            }
+            else
+            {
+                Color newColor;
+                switch (squad)
+                {
+                    case HiveMind.squads.s_FlagAttackers:
+                    {
+                        newColor = Color.yellow;
+                        break;
+                    }
+                    case HiveMind.squads.s_PlayerAttackers:
+                    {
+                        newColor = Color.cyan;
+                        break;
+                    }
+                    default:
+                    {
+                        newColor = new Color(192, 192, 192);
+                        break;
+                    }
+                }
+
+                thisEnemy.GetComponent<SpriteRenderer>().color = newColor;
             }
 
 
             if (thisEnemy == null)
             {
                 thisEnemy = GetComponent<EnemyLogic>();
+                ogColor = thisEnemy.GetComponent<SpriteRenderer>().color;
             }
+
+
 
             bestAction = null;
             float highestUtility = 0.0f;

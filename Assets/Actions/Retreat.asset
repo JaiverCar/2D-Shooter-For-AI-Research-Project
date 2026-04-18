@@ -47,7 +47,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     contextKey: health
-    priority: 1
+    priority: 2
     allowedSquads: 0000000001000000020000000300000004000000
   searchRadius: 15
   maxAcceptableVisibility: 0.3

@@ -127,14 +127,17 @@ namespace UtilityAI
 
                 playerAttackers.Clear();
 
-                int currScouts = scouts.Count - 1;
+                List<Brain> sorted = new List<Brain>(scouts);
+                sorted.Sort((a, b) =>
+                    Vector2.Distance(a.transform.position, lastKnownPlayerPosition)
+                    .CompareTo(Vector2.Distance(b.transform.position, lastKnownPlayerPosition)));
 
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < count && i < sorted.Count; i++)
                 {
-                    Brain sub = scouts[i];
+                    Brain sub = sorted[i];
                     sub.squad = squads.s_PlayerAttackers;
                     playerAttackers.Add(sub);
-                    scouts.RemoveAt(i);
+                    scouts.Remove(sub);
                 }
             }
         }
@@ -160,12 +163,17 @@ namespace UtilityAI
 
                 flagAttackers.Clear();
 
-                for (int i = 0; i < count; i++)
+                List<Brain> sorted = new List<Brain>(scouts);
+                sorted.Sort((a, b) =>
+                    Vector2.Distance(a.transform.position, lastKnownFlagPosition)
+                    .CompareTo(Vector2.Distance(b.transform.position, lastKnownFlagPosition)));
+
+                for (int i = 0; i < count && i < sorted.Count; i++)
                 {
-                    Brain sub = scouts[i];
+                    Brain sub = sorted[i];
                     sub.squad = squads.s_FlagAttackers;
                     flagAttackers.Add(sub);
-                    scouts.RemoveAt(i);
+                    scouts.Remove(sub);
                 }
             }
         }
