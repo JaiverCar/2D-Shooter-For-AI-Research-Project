@@ -28,6 +28,8 @@ public class EnemyLogic : MonoBehaviour
     // bool to check if this is a Grunt
     public bool isGrunt = false;
 
+    public bool isHiveNode = false;
+
     public bool doChasePlayer = true;
 
     // tile to move to
@@ -139,7 +141,6 @@ public class EnemyLogic : MonoBehaviour
 
     void Start()
     {
-
         //Initialize enemy health and health bar
         EnemyHealthBar = transform.Find("EnemyHealthBar").GetComponent<HealthBar>();
         EnemyHealthBar.MaxHealth = StartingHealth;
@@ -172,12 +173,32 @@ public class EnemyLogic : MonoBehaviour
         {
             TerrainAnalysis.Instance.UnregisterEnemy(transform);
         }
+
+        if (isHiveNode == true)
+        {
+            var hiveMind = FindObjectOfType<HiveMind>();
+
+            if (hiveMind != null)
+            {
+                hiveMind.globalSignalStrength -= 0.5f;
+
+                if (hiveMind.globalSignalStrength < 0.0f)
+                {
+                    hiveMind.globalSignalStrength = 0.0f;
+                }
+            }
+        }
     }
 
 
     // Update is called once per frame
     void Update()
     {
+        if (drawAStarPath == true)
+        {
+            DebugDrawAStarPath();
+        }
+
         //Don't do anything if in cinematic mode
         if (CinematicMode)
         {
@@ -321,7 +342,7 @@ public class EnemyLogic : MonoBehaviour
 
 
         // if this is not a leader it will be affected by the flocking logic
-        if (isLeader == false)
+        if (isLeader == false && isHiveNode == false)
         {
             Vector3 movementTargetLocation = currTarget;
 
@@ -538,37 +559,82 @@ public class EnemyLogic : MonoBehaviour
     }
 
 
-    private void OnDrawGizmos()
+    private void DebugDrawAStarPath()
     {
-        if (drawAStarPath == true)
+        if (path == null || path.Count == 0) return;
+
+        for (int i = 0; i < path.Count - 1; i++)
+            Debug.DrawLine(path[i], path[i + 1], Color.green);
+
+        if (waypointIndex < path.Count)
+            DebugDrawCircle(path[waypointIndex], 0.15f, Color.red);//Gizmos.DrawSphere(path[waypointIndex], 0.15f);
+
+
+        if (path == null || path.Count == 0) return;
+
+        for (int i = 0; i < path.Count; i++)
         {
-            if (path == null || path.Count == 0) return;
+            // color goes from red at start to green at end
+            Color setColor = Color.Lerp(Color.red, Color.green, (float)i / path.Count);
+            DebugDrawCircle(path[i], 0.1f, setColor); //Gizmos.DrawSphere(path[i], 0.1f);
 
-            Gizmos.color = Color.green;
-            for (int i = 0; i < path.Count - 1; i++)
-                Gizmos.DrawLine(path[i], path[i + 1]);
+            if (i < path.Count - 1)
+                Debug.DrawLine(path[i], path[i + 1], setColor);//Gizmos.DrawLine(path[i], path[i + 1]);
 
-            Gizmos.color = Color.red;
-            if (waypointIndex < path.Count)
-                Gizmos.DrawSphere(path[waypointIndex], 0.15f);
-
-
-            if (path == null || path.Count == 0) return;
-
-            for (int i = 0; i < path.Count; i++)
-            {
-                // color goes from red at start to green at end
-                Gizmos.color = Color.Lerp(Color.red, Color.green, (float)i / path.Count);
-                Gizmos.DrawSphere(path[i], 0.1f);
-
-                if (i < path.Count - 1)
-                    Gizmos.DrawLine(path[i], path[i + 1]);
-
-                // draw the index number
-                UnityEditor.Handles.Label(path[i], i.ToString());
-            }
+            // draw the index number
+            //UnityEditor.Handles.Label(path[i], i.ToString());
         }
     }
+
+    public static void DebugDrawCircle(Vector2 center, float radius, Color color, float duration = 0f, int segments = 32)
+    {
+        float angleStep = 360f / segments;
+        float angle = 0f;
+
+        Vector2 prevPoint = center + new Vector2(Mathf.Cos(0), Mathf.Sin(0)) * radius;
+
+        for (int i = 1; i <= segments; i++)
+        {
+            angle += angleStep * Mathf.Deg2Rad;
+
+            Vector2 nextPoint = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+
+            Debug.DrawLine(prevPoint, nextPoint, color, duration);
+            prevPoint = nextPoint;
+        }
+    }
+
+    //private void OnDrawGizmos()
+    //{
+    //    if (drawAStarPath == true)
+    //    {
+    //        if (path == null || path.Count == 0) return;
+
+    //        Gizmos.color = Color.green;
+    //        for (int i = 0; i < path.Count - 1; i++)
+    //            Gizmos.DrawLine(path[i], path[i + 1]);
+
+    //        Gizmos.color = Color.red;
+    //        if (waypointIndex < path.Count)
+    //            Gizmos.DrawSphere(path[waypointIndex], 0.15f);
+
+
+    //        if (path == null || path.Count == 0) return;
+
+    //        for (int i = 0; i < path.Count; i++)
+    //        {
+    //            // color goes from red at start to green at end
+    //            Gizmos.color = Color.Lerp(Color.red, Color.green, (float)i / path.Count);
+    //            Gizmos.DrawSphere(path[i], 0.1f);
+
+    //            if (i < path.Count - 1)
+    //                Gizmos.DrawLine(path[i], path[i + 1]);
+
+    //            // draw the index number
+    //            UnityEditor.Handles.Label(path[i], i.ToString());
+    //        }
+    //    }
+    //}
 
 
 }

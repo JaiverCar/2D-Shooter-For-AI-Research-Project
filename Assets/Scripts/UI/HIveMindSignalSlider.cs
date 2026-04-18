@@ -22,7 +22,14 @@ public class HIveMindSignalSlider : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        var hiveMind = FindObjectOfType<HiveMind>();
+
+        GetComponent<Slider>().value = hiveMind.globalSignalStrength * 100.0f;
+
+        signalStrength = hiveMind.globalSignalStrength * 100.0f;
+
         GetComponentInChildren<TextMeshProUGUI>().text = "Hive Mind Signal Strength: " + (int)signalStrength + "%";
+
     }
 
     public void SignalStrengthChanged()
