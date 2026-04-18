@@ -1,4 +1,4 @@
-
+    
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
@@ -127,6 +127,13 @@ public class TerrainAnalysis : MonoBehaviour
     [Tooltip("Alpha/transparency for enemy vision layers")]
     [Range(0f, 1f)]
     public float enemyVisionAlpha = 0.6f;
+    [Tooltip("How many grid cells outward each enemy checks for vision. Keep this as small as your map allows.")]
+    public int enemyVisionRadius = 15;
+
+    [Header("Performance")]
+    [Tooltip("How often (in seconds) enemy vision layers are recalculated. Lower = more accurate but more expensive.")]
+    public float visionUpdateInterval = 0.1f;
+    private float visionUpdateTimer = 0f;
 
     // Track enemy vision layers
     private Dictionary<Transform, LayerVisualization> enemyVisionLayers = new Dictionary<Transform, LayerVisualization>();
@@ -230,9 +237,12 @@ public class TerrainAnalysis : MonoBehaviour
             Debug.Log($"Tracked enemies: {enemyVisionLayers.Count}");
         }
 
-        // Update all enemy vision layers
-        if (showAllEnemyVision || showEnemyVisionLayers)
+        // Always update enemy vision layer data so Scanner can read it
+        // regardless of whether the layer is visible in the editor
+        visionUpdateTimer += Time.deltaTime;
+        if (visionUpdateTimer >= visionUpdateInterval)
         {
+            visionUpdateTimer = 0f;
             UpdateAllEnemyVisionLayers();
         }
     }
@@ -327,11 +337,27 @@ public class TerrainAnalysis : MonoBehaviour
             return;
 
         var visionLayer = enemyVisionLayers[enemy];
-        if (visionLayer.layer != null)
-        {
-            visionLayer.layer.Clear(0f);
-            EnemyFieldOfView(visionLayer.layer, enemyFOVAngle, 4.0f, 1.0f, enemy);
-        }
+        if (visionLayer.layer == null)
+            return;
+
+        // Only clear the area around the enemy so stale cells from movement don't linger.
+        // We clear a slightly larger window than the vision radius to wipe last frame's position.
+        Vector2 agentPos = new Vector2(enemy.position.x, enemy.position.y);
+        Node agentNode = grid.NodeFromWorldPoint(agentPos);
+        int row = agentNode.gridY;
+        int col = agentNode.gridX;
+        int clearRadius = enemyVisionRadius + 2;
+
+        int rMin = math.max(0, row - clearRadius);
+        int rMax = math.min(grid.gridSizeY - 1, row + clearRadius);
+        int cMin = math.max(0, col - clearRadius);
+        int cMax = math.min(grid.gridSizeX - 1, col + clearRadius);
+
+        for (int r = rMin; r <= rMax; r++)
+            for (int c = cMin; c <= cMax; c++)
+                visionLayer.layer.SetValue(r, c, 0f);
+
+        EnemyFieldOfView(visionLayer.layer, enemyFOVAngle, 4.0f, 1.0f, enemy);
     }
 
     // Update all registered enemy vision layers
@@ -878,43 +904,45 @@ public class TerrainAnalysis : MonoBehaviour
 
         Vector2 facing = new Vector2(enemy.up.x, enemy.up.y).normalized;
 
-        float FOVDeg = fovAngle;
-        float halfFOV = (FOVDeg * 0.5f) * (math.PI / 180.0f);
+        float halfFOV = (fovAngle * 0.5f) * (math.PI / 180.0f);
         float FOV = math.cos(halfFOV);
 
-        for (int r = 0; r < grid.gridSizeY; r++)
+        int rMin = math.max(0, row - enemyVisionRadius);
+        int rMax = math.min(grid.gridSizeY - 1, row + enemyVisionRadius);
+        int cMin = math.max(0, col - enemyVisionRadius);
+        int cMax = math.min(grid.gridSizeX - 1, col + enemyVisionRadius);
+
+        for (int r = rMin; r <= rMax; r++)
         {
-            for (int c = 0; c < grid.gridSizeX; c++)
+            for (int c = cMin; c <= cMax; c++)
             {
-                Vector2 currPos = new Vector2(c, r); // x=col, y=row
+                if (!grid.IsWalkable(c, r))
+                    continue;
 
-                if (grid.IsValidGridPos(currPos) && grid.IsWalkable(c, r)) // IsWalkable takes (x, y) = (col, row)
+                if (!IsClearPath(r, c, row, col))
+                    continue;
+
+                float currValue = layer.GetValue(r, c);
+                if (currValue < 0)
+                    layer.SetValue(r, c, 0.0f);
+
+                float dx = math.abs(r - row);
+                float dy = math.abs(c - col);
+                float tempDist = math.sqrt(dx * dx + dy * dy);
+
+                if (tempDist < closeDistance)
                 {
-                    if (!IsClearPath(r, c, row, col))
-                        continue;
-
-                    float currValue = layer.GetValue(r, c);
-                    if (currValue < 0)
-                        layer.SetValue(r, c, 0.0f);
-
-                    float dx = math.abs(r - row);
-                    float dy = math.abs(c - col);
-                    float tempDist = math.sqrt(dx * dx + dy * dy);
-
-                    if (tempDist < closeDistance)
-                    {
-                        layer.SetValue(r, c, occupancyValue);
-                        continue;
-                    }
-
-                    Node node = grid.GridGet(r, c);
-                    Vector2 agentToCell = (node.worldPosition - agentPos).normalized;
-
-                    float cos = Vector2.Dot(facing, agentToCell);
-
-                    if (cos >= FOV)
-                        layer.SetValue(r, c, occupancyValue);
+                    layer.SetValue(r, c, occupancyValue);
+                    continue;
                 }
+
+                Node node = grid.GridGet(r, c);
+                Vector2 agentToCell = (node.worldPosition - agentPos).normalized;
+
+                float cos = Vector2.Dot(facing, agentToCell);
+
+                if (cos >= FOV)
+                    layer.SetValue(r, c, occupancyValue);
             }
         }
     }

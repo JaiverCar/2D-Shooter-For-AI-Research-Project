@@ -5,35 +5,26 @@ namespace UtilityAI
     [CreateAssetMenu(menuName = "AI/Actions/A_GetFlag")]
     public class A_GetFlag : ActionAI
     {
+        [SerializeField] private float updateThreshold = 1.0f;
+        [SerializeField] private float updateInterval = 0.5f;
 
-        private Transform flagRef = null;
         public override void Init(Context context)
         {
-            GetFlagReference();
         }
 
         public override void Execute(Context context)
         {
-            if(flagRef == null)
+            Vector2 hiveLastKnownPos = context.GetData<Vector2>("hiveLastKnownFlagPos");
+
+            float distanceMoved = Vector3.Distance(hiveLastKnownPos, context.lastFlagPosition);
+            float timeSinceUpdate = Time.time - context.lastFlagUpdateTime;
+
+            if (distanceMoved >= updateThreshold || timeSinceUpdate >= updateInterval)
             {
-                GetFlagReference();
-                return;
+                context.setTarget(hiveLastKnownPos);
+                context.lastFlagPosition = hiveLastKnownPos;
+                context.lastFlagUpdateTime = Time.time;
             }
-
-            context.setTarget(flagRef.position);
-        }
-
-        void GetFlagReference()
-        {
-            //Already tracking the player
-            if (flagRef != null)
-                return;
-
-            //Find the player
-            var flag = GameObject.Find("Flag");
-            if (flag == null)
-                return;
-            flagRef = flag.transform;
         }
     }
 }

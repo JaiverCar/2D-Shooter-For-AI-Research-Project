@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEditor.PackageManager.Requests;
@@ -24,7 +25,7 @@ public class Pathfinder : MonoBehaviour
         Node startNode = Grid.Instance.NodeFromWorldPoint(startPos);
         Node goalNode = Grid.Instance.NodeFromWorldPoint(targetPos);
 
-        currHeuristic = CalculateHeuristic(startNode.pos, goalNode.pos);
+        currHeuristic = CalculateHeuristic(startNode.pos, goalNode.pos, weight, stupidity);
         currIteration++;
 
         startNode.gCost = 0.0f;
@@ -43,6 +44,9 @@ public class Pathfinder : MonoBehaviour
         }
 
         openSet[0] = startNode;
+
+        // Dumber enemies ignore path-avoidance costs from other enemies' trails
+        float extraCostScale = 1f - Mathf.Clamp01(stupidity / 10f);
 
         var path = new List<Vector2> {};
 
@@ -128,8 +132,8 @@ public class Pathfinder : MonoBehaviour
                 }
 
                 //calculate new G cost (include extraCost for path avoidance)
-                float newG = curr.gCost + neighbor.cost + Grid.Instance.GridGet(neighbor.pos).extraCost;
-                float hNeighbor = CalculateHeuristic(neighbor.pos, goalNode.pos, weight);
+                float newG = curr.gCost + neighbor.cost + Grid.Instance.GridGet(neighbor.pos).extraCost * extraCostScale;
+                float hNeighbor = CalculateHeuristic(neighbor.pos, goalNode.pos, weight, stupidity);
 
                 Node node = Grid.Instance.GridGet(neighbor.pos);
 
@@ -187,7 +191,7 @@ public class Pathfinder : MonoBehaviour
         int dy = (int)math.abs(from.y - goal.y);
 
         float newH = math.sqrt((dx * dx + dy * dy));
-        newH += UnityEngine.Random.Range(0f, stupidity); // stupidity = 0 is smart, 2+ is dumb
+        newH += UnityEngine.Random.Range(0.0f, stupidity); // stupidity = 0 is smart, 2+ is dumb
         return newH * weight;
     }
 
@@ -236,23 +240,17 @@ public class Pathfinder : MonoBehaviour
 
     Vector2 CatmullRom(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, float t)
     {
-        float tension = 0.5f; // 0.5 = standard Catmull-Rom, 1.0 = no overshoot (linear)
-
         Vector2 outputPoint =
-        p1 * (-tension * t * t * t + 2.0f * tension * t * t - tension * t) +
-        p2 * ((2.0f - tension) * t * t * t + (tension - 3.0f) * t * t + 1.0f) +
-        p3 * ((tension - 2.0f) * t * t * t + (3.0f - 2.0f * tension) * t * t + tension * t) +
-        p4 * (tension * t * t * t - tension * t * t);
+        p1 * (-0.5f*t*t*t + t*t - 0.5f*t) +
+        p2 * (1.5f*t*t*t - 2.5f*t*t + 1.0f) +
+        p3 * (-1.5f*t*t*t + 2.0f*t*t + 0.5f*t) +
+        p4 * (0.5f*t*t*t - 0.5f*t*t);
 
         return outputPoint;
     }
 
     void Smooth(List<Vector2> reversedPath, int extraPoints = 3)
     {
-        if (reversedPath.Count == 0)
-        {
-            return;
-        }
         if (reversedPath.Count < 3 || extraPoints <= 0)
         {
             return;
@@ -298,7 +296,7 @@ public class Pathfinder : MonoBehaviour
             //add in the points
             for (int j = 1; j <= extraPoints; ++j)
             {
-                float t = (float)j / (extraPoints + 1);
+                float t = (float)j / (float)(extraPoints + 1);
                 Vector2 newPoint = CatmullRom(p1, p2, p3, p4, t);
                 newPath.Add(newPoint);
             }

@@ -12,41 +12,23 @@ namespace UtilityAI
 
         public override void Init(Context context)
         {
-            if (context.playerRef == null)
-                GetPlayerReference(context);
-
-            if (context.playerRef != null)
-            {
-                context.lastPlayerPosition = context.playerRef.position;
-                context.lastUpdateTime = Time.time;
-                context.setTarget(context.playerRef.position);
-            }
         }
 
         public override void Execute(Context context)
         {
-            if (context.playerRef == null)
-            {
-                GetPlayerReference(context);
-                return;
-            }
 
-            float distanceMoved = Vector3.Distance(context.playerRef.position, context.lastPlayerPosition);
+            Vector2 hiveLastKnownPos = context.GetData<Vector2>("hiveLastKnownPlayerPos");
+
+            // If we have a direct reference to the player, track them normally
+            float distanceMoved = Vector3.Distance(hiveLastKnownPos, context.lastPlayerPosition);
             float timeSinceUpdate = Time.time - context.lastUpdateTime;
 
             if (distanceMoved >= updateThreshold || timeSinceUpdate >= updateInterval)
             {
-                context.setTarget(context.playerRef.position);
-                context.lastPlayerPosition = context.playerRef.position;
+                context.setTarget(hiveLastKnownPos);
+                context.lastPlayerPosition = hiveLastKnownPos;
                 context.lastUpdateTime = Time.time;
             }
-        }
-
-        private void GetPlayerReference(Context context)
-        {
-            var player = GameObject.Find("Player(Clone)");
-            if (player != null)
-                context.playerRef = player.transform;
         }
     }
 }

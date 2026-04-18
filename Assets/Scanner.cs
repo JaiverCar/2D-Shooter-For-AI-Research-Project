@@ -63,7 +63,7 @@ public class Scanner : MonoBehaviour
 
         if (Flag == null)
         {
-            var flag = GameObject.Find("Flag(Clone)");
+            var flag = GameObject.Find("Flag");
             if (flag != null)
             {
                 Flag = flag.transform;

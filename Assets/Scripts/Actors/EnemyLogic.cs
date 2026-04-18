@@ -86,7 +86,7 @@ public class EnemyLogic : MonoBehaviour
 
     //Track the player for aggro and targeting purposes
     [HideInInspector]
-    public float repathInterval = 0.2f;
+    public float repathInterval = 3.0f;
 
     //Astar stuff
     List<Vector2> path;
@@ -97,8 +97,15 @@ public class EnemyLogic : MonoBehaviour
     public Vector2 AstarTarget = new Vector2(0, 0);
     public bool drawAStarPath = false;
 
+    // Stable path origin: pathfind from the last committed grid node, not the live transform
+    Node lastPathNode = null;
+    Node currentGridNode = null;
+    Vector2 lastTargetGridPos = Vector2.zero;
+    Vector2 targetGridPos = Vector2.zero;
+    float repathThresholdSqr = 4.0f; // repath when target moves ~2 grid units
+
     //Brain
-    private Brain thisBrain;
+    public Brain thisBrain;
 
     private Scanner thisScanner;
 
@@ -106,6 +113,7 @@ public class EnemyLogic : MonoBehaviour
     public Vector2 flagLastKnownLocation = Vector2.zero;
 
     public bool seesPlayer = false;
+    public bool hiveSeesPlayer = false;
     public Vector2 lastKnownPlayerLocation = Vector2.zero;
 
     //Don't do anything because a cinematic occuring
@@ -121,6 +129,8 @@ public class EnemyLogic : MonoBehaviour
     Vector2 lastMoveDirection = Vector2.zero;
     float directionBlendSpeed = 10.0f; // How fast to blend between old and new direction
     float repathTimer = 0.0f;
+
+    public bool hasFlag = false;
 
     public static event Action<EnemyLogic> OnEnemyDied;
 
@@ -186,12 +196,11 @@ public class EnemyLogic : MonoBehaviour
             // Pathfinding logic - check if we need to repath (AI HELPED HERE)
             repathTimer += Time.deltaTime;
 
-            bool targetChanged = lastTarget != AstarTarget;
-            bool targetMoved = AstarTarget != null && Vector2.Distance(AstarTarget, lastTargetPos) > 0.3f;
+            bool targetMoved = AstarTarget != null && Vector2.Distance(AstarTarget, lastTargetPos) > 1.0f;
 
             // Check if we've reached the current waypoint (or path is invalid)
             bool atWaypoint = path == null || waypointIndex >= path.Count ||
-                              Vector2.Distance(transform.position, path[waypointIndex]) < 0.16f;
+                              Vector2.Distance(transform.position, path[waypointIndex]) < 0.05f;
 
             // Check if we're at the end of the path completely
             bool atEndOfPath = path != null && waypointIndex >= path.Count;
@@ -203,28 +212,47 @@ public class EnemyLogic : MonoBehaviour
             // - At end of path and timer elapsed (keep following)
             // - Timer elapsed AND target moved AND at a waypoint (smooth tracking)
             // - Path is null (initial state) <- ADDED THIS CHECK
-            if (AstarTarget != null &&
-                (targetChanged ||
-                 path == null ||
-                 (atEndOfPath && repathTimer >= repathInterval) ||
-                 (repathTimer >= repathInterval && targetMoved && atWaypoint)))
-            {
-                lastTarget = AstarTarget;
-                lastTargetPos = AstarTarget;
+            // Update current grid node and target grid pos each frame
+            currentGridNode = AStarGrid.Instance.NodeFromWorldPoint(transform.position);
+            if (AstarTarget != Vector2.zero)
+                targetGridPos = AStarGrid.Instance.NodeFromWorldPoint(AstarTarget).pos;
 
-                List<Vector2> newPath = Pathfinder.Instance.FindPath(transform.position, AstarTarget);
+            bool cooldownReady = repathTimer >= repathInterval;
+            bool targetMovedEnough =
+                (targetGridPos - lastTargetGridPos).sqrMagnitude >= repathThresholdSqr;
+
+            bool shouldRepath =
+                path == null ||
+                (cooldownReady && atWaypoint && (targetMovedEnough || atEndOfPath));
+
+            if (AstarTarget != Vector2.zero && shouldRepath)
+            {
+                // Use last committed grid node as path origin to prevent jitter
+                Node originNode = lastPathNode ?? currentGridNode;
+                Vector2 pathOrigin = originNode != null ? originNode.worldPosition : transform.position;
+
+                lastPathNode = currentGridNode;
+                lastTargetGridPos = targetGridPos;
+                repathTimer = 0f;
+
+                // Derive path quality from signal: weak signal = greedy + noisy, strong = optimal + precise
+                float signal = Mathf.Clamp01(
+                    thisBrain.personalConnection * (HiveMind.Instance != null ? HiveMind.Instance.globalSignalStrength : 1f));
+                float pathWeight = Mathf.Lerp(2.0f, 1.0f, signal);
+                float pathStupidity = Mathf.Lerp(10.0f, 0.0f, signal);
+
+                List<Vector2> newPath = Pathfinder.Instance.FindPath(pathOrigin, AstarTarget, pathWeight, pathStupidity, signal > 0.7 , true);
                 if (newPath != null && newPath.Count > 1)
                 {
-                    newPath.RemoveAt(0);
                     path = newPath;
                     waypointIndex = 0;
                 }
-
-                repathTimer = 0.0f;
             }
 
             // END AI HELP
         }
+
+
 
         // if the path is empty or there we are at the end of it, stop moving (ASTAR)
         if (doAstar == true && (path == null || waypointIndex >= path.Count))
@@ -253,6 +281,11 @@ public class EnemyLogic : MonoBehaviour
             {
                 lastKnownPlayerLocation = thisScanner.GetPlayerPosition();
                 SetAggroState(true);
+
+                if (thisBrain != null && thisBrain.isConnectedToHive)
+                {
+                    HiveMind.Instance.ReportSeeingPlayer(lastKnownPlayerLocation);
+                }
             }
             else
             {
@@ -263,6 +296,11 @@ public class EnemyLogic : MonoBehaviour
             {
                 flagLastKnownLocation = thisScanner.GetFlagPosition();
                 seesFlag = true;
+
+                if (thisBrain != null && thisBrain.isConnectedToHive)
+                {
+                    HiveMind.Instance.ReportSeeingFlag(flagLastKnownLocation);
+                }
             }
             else
             {
@@ -308,12 +346,14 @@ public class EnemyLogic : MonoBehaviour
                 GetComponent<Rigidbody2D>().velocity = Vector2.zero;
                 if (!advancedThisFrame)
                 {
+                    // Commit the reached waypoint node as the new stable path origin
+                    lastPathNode = AStarGrid.Instance.NodeFromWorldPoint(currTarget);
                     waypointIndex++;
                     advancedThisFrame = true;
                 }
             }
         }
-        // if this is a leader, then it will only move around with A*
+        // if this is a leader
         else
         {
             Vector3 movementTargetLocation = currTarget;
@@ -338,6 +378,8 @@ public class EnemyLogic : MonoBehaviour
                 GetComponent<Rigidbody2D>().velocity = Vector2.zero;
                 if (!advancedThisFrame)
                 {
+                    // Commit the reached waypoint node as the new stable path origin
+                    lastPathNode = AStarGrid.Instance.NodeFromWorldPoint(currTarget);
                     waypointIndex++;
                     advancedThisFrame = true;
                 }
@@ -346,7 +388,7 @@ public class EnemyLogic : MonoBehaviour
     }
 
 
-    //Not using a normal getter and setter so that these calls are more explicit
+    //Not using a normal getter
     public bool IsAggroed()
     {
         return Aggroed;

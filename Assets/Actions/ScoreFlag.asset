@@ -9,27 +9,36 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ac6c3395dd78834a97b3d1e426e0a22, type: 3}
-  m_Name: Wander
+  m_Script: {fileID: 11500000, guid: 3321d43abe3713a488af8b4f46d9132d, type: 3}
+  m_Name: ScoreFlag
   m_EditorClassIdentifier: 
   consideration:
     curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: -0.99147767
-        value: 0.48918322
-        inSlope: 0
-        outSlope: 0
+        time: 0
+        value: 0.94999695
+        inSlope: 0.0006163486
+        outSlope: 0.0006163486
         tangentMode: 34
         weightedMode: 0
         inWeight: 0
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.008522272
-        value: 0.48918322
-        inSlope: 0
-        outSlope: 0
+        time: 0.9973296
+        value: 0.95061165
+        inSlope: 0.0005270884
+        outSlope: 0.0005270884
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.36174226
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 18.494688
+        outSlope: 18.494688
         tangentMode: 34
         weightedMode: 0
         inWeight: 0.33333334
@@ -37,6 +46,6 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    contextKey: aggroed
-    priority: 0
-    allowedSquads: 00000000010000000200000003000000
+    contextKey: hasFlag
+    priority: 10
+    allowedSquads: 01000000

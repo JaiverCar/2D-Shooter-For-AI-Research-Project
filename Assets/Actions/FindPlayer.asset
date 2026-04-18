@@ -37,5 +37,8 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    contextKey: aggroed
+    contextKey: hiveSeesPlayer
     priority: 1
+    allowedSquads: 03000000
+  updateThreshold: 1
+  updateInterval: 0.5

@@ -19,9 +19,19 @@ namespace UtilityAI
 
         public virtual bool IsAllowedForSquad(HiveMind.squads squad) 
         { 
-            return true; // Default: all actions work for all squads
+            if( consideration.allowedSquads.Contains(squad))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public abstract void Execute(Context context);
+
+        public virtual void OnExit(Context context)
+        {
+            // nothing in base class
+        }
     }
 }

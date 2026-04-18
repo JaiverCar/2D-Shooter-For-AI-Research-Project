@@ -10,6 +10,19 @@ public class Flag : MonoBehaviour
     private PlayerLogic pHolder;
     private EnemyLogic eHolder;
 
+    [SerializeField]
+    public bool isEnemyFlag;
+
+    private static readonly Vector3 spawnPosition = new Vector3(-21f, 21f, 0f);
+
+    public void Respawn()
+    {
+        pHolder = null;
+        eHolder = null;
+        transform.position = spawnPosition;
+        GetComponent<CircleCollider2D>().enabled = true;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -24,6 +37,8 @@ public class Flag : MonoBehaviour
         {
             // set our position to the enemy's last position
             transform.position = eHolder.transform.position;
+
+            enemy.hasFlag = false;
 
             eHolder = null;
 
@@ -88,10 +103,12 @@ public class Flag : MonoBehaviour
         var enemy = collision.GetComponent<EnemyLogic>();
 
         // if we collided with an enemy
-        if (enemy != null)
+        if (enemy != null && enemy.thisBrain.squad == UtilityAI.HiveMind.squads.s_FlagAttackers)
         {
             // save a ref the enemy as our holder
             eHolder = enemy;
+
+            enemy.hasFlag = true;
             
             // disable our collider component
             GetComponent<CircleCollider2D>().enabled = false;

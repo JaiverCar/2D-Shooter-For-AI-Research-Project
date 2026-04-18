@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UtilityAI
@@ -11,7 +13,12 @@ namespace UtilityAI
 
         public float visibilityWeight = 0.6f;
 
+        public float arrivalThreshold = 0.3f;
+        public float healDelay = 3f;
+        public int healAmount = 1;
+
         private LayerVisualization visibilityLayer;
+        private readonly HashSet<EnemyLogic> healingEnemies = new HashSet<EnemyLogic>();
         public override void Init(Context context)
         {
             if (TerrainAnalysis.Instance == null)
@@ -31,38 +38,65 @@ namespace UtilityAI
 
         public override void Execute(Context context)
         {
-            if (visibilityLayer == null || visibilityLayer.layer == null)
+            if (!context.retreating)
             {
-                Init(context);
-                return;
+
+                context.retreating = true;
+                if (visibilityLayer == null || visibilityLayer.layer == null)
+                {
+                    Init(context);
+                    return;
+                }
+
+                EnemyLogic enemy = context.brain.thisEnemy;
+
+                if (enemy == null)
+                {
+                    return;
+                }
+
+                Vector2 currentPos = enemy.transform.position;
+                AStarGrid grid = AStarGrid.Instance;
+
+                if (grid == null)
+                {
+                    return;
+                }
+
+                Node currentNode = grid.NodeFromWorldPoint(currentPos);
+                int currentRow = currentNode.gridY;
+                int currentCol = currentNode.gridX;
+
+                context.retreatPos = FindBestRetreatPosition(currentRow, currentCol, grid);
+
+                if (context.retreatPos != Vector2.zero)
+                {
+                    context.setTarget(context.retreatPos);
+                }
+            }
+            else
+            {
+                EnemyLogic enemy = context.brain.thisEnemy;
+
+                if (enemy != null && context.retreatPos != Vector2.zero)
+                {
+                    float dist = Vector2.Distance((Vector2)enemy.transform.position, context.retreatPos);
+
+                    if (dist <= arrivalThreshold && enemy.Health < enemy.StartingHealth && !healingEnemies.Contains(enemy))
+                    {
+                        healingEnemies.Add(enemy);
+                        enemy.StartCoroutine(HealAfterDelay(enemy));
+                    }
+                }
             }
 
-            EnemyLogic enemy = context.brain.thisEnemy;
+        }
 
-            if(enemy == null)
-            {
-                return;
-            }
-
-            Vector2 currentPos = enemy.transform.position;
-            AStarGrid grid = AStarGrid.Instance;
-
-            if (grid == null)
-            {
-                return;
-            }
-
-            Node currentNode = grid.NodeFromWorldPoint(currentPos);
-            int currentRow = currentNode.gridY;
-            int currentCol = currentNode.gridX;
-
-            Vector2 bestRetreatPos = FindBestRetreatPosition(currentRow, currentCol, grid);
-
-            if (bestRetreatPos != Vector2.zero)
-            {
-                context.setTarget(bestRetreatPos);
-            }
-
+        private IEnumerator HealAfterDelay(EnemyLogic enemy)
+        {
+            yield return new WaitForSeconds(healDelay);
+            enemy.Health = Mathf.Min(enemy.Health + healAmount, enemy.StartingHealth);
+            healingEnemies.Remove(enemy);
         }
 
         private Vector2 FindBestRetreatPosition(int currentRow, int currentCol, AStarGrid grid)
@@ -115,6 +149,11 @@ namespace UtilityAI
             }
 
             return bestPosition;
+        }
+
+        public override void OnExit(Context context)
+        {
+            context.retreating = false;
         }
     }
 }

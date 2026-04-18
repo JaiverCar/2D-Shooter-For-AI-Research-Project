@@ -1,25 +1,38 @@
-using Newtonsoft.Json.Bson;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net.NetworkInformation;
-using UnityEditor.Rendering.LookDev;
 using UnityEngine;
-using UtilityAI;
 
 namespace UtilityAI
 {
+    [Serializable]
     public class HiveMind : MonoBehaviour
     {
-        public static HiveMind Instance; // Singleton
+        public static HiveMind Instance;
 
-        private bool knowPlayerLocation = false;
-        public Vector2 lastKnownPlayerPosition;
+        public List<Brain> subordinates;
+        public List<Brain> scouts;
+
+        public bool hiveSeesFlag = false;
         public Vector2 lastKnownFlagPosition;
+        public List<Brain> flagAttackers;
+        public bool hasFlagSquad;
 
-        public float globalSmartness = 1.0f;
-        public float globalCoordination = 1.0f;
+        public bool hiveSeesPlayer = false;
+        public Vector2 lastKnownPlayerPosition;
+        public List<Brain> playerAttackers;
+        private bool hasPlayerSquad;
 
-        public List<SquadLeader> activeSquadLeaders = new List<SquadLeader>();
+        public float timeSincePlayerSeen = 0f;
+        public float playerMemoryDuration = 3f;
+
+        public float timeSinceFlagSeen = 0f;
+        public float flagMemoryDuration = 3f;
+
+        public float globalSignalStrength = 1.0f;
+
+
+        
 
         void Awake()
         {
@@ -28,63 +41,159 @@ namespace UtilityAI
 
         private void Start()
         {
-            // we know the starting position of our flag
-            var flag = GameObject.Find("Flag");
-
-            lastKnownFlagPosition = flag.transform.position;
+            scouts = subordinates;
         }
 
         private void Update()
         {
-            if (knowPlayerLocation == true)
+            timeSincePlayerSeen += Time.deltaTime;
+            if (timeSincePlayerSeen >= playerMemoryDuration)
             {
-                foreach (SquadLeader leader in activeSquadLeaders)
-                {
-                    leader.UpdateAggro(knowPlayerLocation, lastKnownPlayerPosition);
-                }
+                ReportLostPlayer();
             }
 
-            knowPlayerLocation = false;
-        }
-
-        public void UpdateKnowledge(Context context)
-        {
-            lastKnownPlayerPosition = context.lastPlayerPosition;
-            
-            if (context.GetData<bool>("aggroed") == true)
+            timeSinceFlagSeen += Time.deltaTime;
+            if (timeSinceFlagSeen >= flagMemoryDuration)
             {
-                knowPlayerLocation = true;
+                ReportLostFlag();
             }
         }
 
-        public void RegisterSquadLeader(SquadLeader leader)
+        public void ReportSeeingPlayer(Vector2 position)
         {
-            activeSquadLeaders.Add(leader);
-            RecalculateStats();
+            if (!hiveSeesPlayer)
+            {
+                AssignPlayerAttackers();
+            }
+            hiveSeesPlayer = true;
+            lastKnownPlayerPosition = position;
+            timeSincePlayerSeen = 0f;
         }
 
-        public void UnregisterSquadLeader(SquadLeader leader)
+        private void ReportLostPlayer()
         {
-            activeSquadLeaders.Remove(leader);
-            RecalculateStats();
+            if (hiveSeesPlayer)
+            {
+                UnassignPlayerAttackers();
+            }
+            hiveSeesPlayer = false;
         }
 
-        void RecalculateStats()
+        public void ReportSeeingFlag(Vector2 position)
         {
-            // Stats based on how many active squads exist
-            int totalSubordinates = 0;
-            foreach (var leader in activeSquadLeaders)
-                totalSubordinates += leader.subordinates.Count;
-
-            globalCoordination = 1 - (1f / (totalSubordinates + 1));
+            if (!hiveSeesFlag)
+            {
+                AssignFlagAttackers();
+            }
+            hiveSeesFlag = true;
+            lastKnownFlagPosition = position;
+            timeSinceFlagSeen = 0f;
         }
 
+        private void ReportLostFlag()
+        {
+            if (hiveSeesFlag)
+            {
+                UnassignFlagAttackers();
+            }
+            hiveSeesFlag = false;
+        }
+
+        public void GetKnowledge(Context context)
+        {
+            context.SetData("hiveSeesPlayer", hiveSeesPlayer);
+            context.SetData("hiveLastKnownPlayerPos", lastKnownPlayerPosition);
+            context.SetData("hiveSeesFlag", hiveSeesFlag);
+            context.SetData("hiveLastKnownFlagPos", lastKnownFlagPosition);
+        }
+
+        [SerializeField]
         public enum squads
         {
             s_FlagDefenders,
             s_FlagAttackers,
             s_Scouts,
             s_PlayerAttackers
+        }
+
+        public void AssignPlayerAttackers()
+        {
+            if (!hasPlayerSquad)
+            {
+                hasPlayerSquad = true;
+
+                int count = Mathf.Max(1, scouts.Count / 3);
+
+                playerAttackers.Clear();
+
+                int currScouts = scouts.Count - 1;
+
+                for (int i = 0; i < count; i++)
+                {
+                    Brain sub = scouts[i];
+                    sub.squad = squads.s_PlayerAttackers;
+                    playerAttackers.Add(sub);
+                    scouts.RemoveAt(i);
+                }
+            }
+        }
+
+        public void UnassignPlayerAttackers()
+        {
+            foreach (Brain sub in playerAttackers)
+            {
+                sub.squad = squads.s_Scouts;
+                scouts.Add(sub);
+            }
+            playerAttackers.Clear();
+            hasPlayerSquad = false;
+        }
+
+        public void AssignFlagAttackers()
+        {
+            if (!hasFlagSquad)
+            {
+                hasFlagSquad = true;
+
+                int count = Mathf.Max(1, scouts.Count / 3);
+
+                flagAttackers.Clear();
+
+                for (int i = 0; i < count; i++)
+                {
+                    Brain sub = scouts[i];
+                    sub.squad = squads.s_FlagAttackers;
+                    flagAttackers.Add(sub);
+                    scouts.RemoveAt(i);
+                }
+            }
+        }
+
+        public void UnassignFlagAttackers()
+        {
+            foreach (Brain sub in flagAttackers)
+            {
+                sub.squad = squads.s_Scouts;
+                scouts.Add(sub);
+            }
+            flagAttackers.Clear();
+            hasFlagSquad = false;
+        }
+
+        public bool RecievesSignal(float connection)
+        {
+            if(UnityEngine.Random.value < globalSignalStrength)
+            {
+                
+                if(UnityEngine.Random.value - 0.2f <= connection)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return false;
         }
 
 

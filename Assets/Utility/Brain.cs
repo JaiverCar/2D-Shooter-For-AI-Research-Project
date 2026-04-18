@@ -13,15 +13,19 @@ namespace UtilityAI
         public List<ActionAI> actions = null;
 
         ActionAI bestAction;
+        ActionAI previousAction;
 
         public EnemyLogic thisEnemy;
 
-        public HiveMind.squads squad;
-        public HiveMind hiveMind; // Reference to MAIN hive mind
-        public SquadLeader squadLeader; // Reference to my squad leader (relay)
-        public float personalSmartness = 1.0f;
+        public HiveMind.squads squad = HiveMind.squads.s_Scouts;
+        public float personalConnection = 1.0f;
 
-        // Start is called before the first frame update
+        private bool wasSeingPlayer = false;
+
+        public bool isConnectedToHive = false;
+        float hiveCheckTimer = 0f;
+        const float hiveCheckInterval = 10f;
+
         void Awake()
         {
             context = new Context(this);
@@ -34,9 +38,23 @@ namespace UtilityAI
             }
         }
 
+        void Start()
+        {
+            isConnectedToHive = HiveMind.Instance != null &&
+                                 HiveMind.Instance.RecievesSignal(personalConnection);
+        }
+
         // Update is called once per frame
         void Update()
         {
+            hiveCheckTimer += Time.deltaTime;
+            if (hiveCheckTimer >= hiveCheckInterval)
+            {
+                hiveCheckTimer = 0f;
+                isConnectedToHive = HiveMind.Instance != null &&
+                                    HiveMind.Instance.RecievesSignal(personalConnection);
+            }
+
             if (thisEnemy == null)
             {
                 thisEnemy = GetComponent<EnemyLogic>();
@@ -48,7 +66,7 @@ namespace UtilityAI
             foreach (ActionAI action in actions)
             {
                 // Skip if action isn't allowed for my squad
-                if (hiveMind != null && !action.IsAllowedForSquad(squad))
+                if (HiveMind.Instance != null && !action.IsAllowedForSquad(squad))
                     continue;
 
                 float utilVal = action.CalculateUtility(context);
@@ -85,9 +103,18 @@ namespace UtilityAI
                 }
             }
 
-            if (bestAction != null)
+            if(previousAction != null)
+            {
+                if(previousAction != bestAction)
+                {
+                    previousAction.OnExit(context);
+                }
+            }
+
+            if(bestAction != null)
             {
                 bestAction.Execute(context);
+                previousAction = bestAction;
             }
 
             if (thisEnemy != null)
@@ -103,32 +130,17 @@ namespace UtilityAI
             context.SetData("speed", thisEnemy.Speed);
             context.SetData("aggroed", thisEnemy.Aggroed);
             context.SetData("flag", thisEnemy.seesFlag);
+            context.SetData("hasFlag", thisEnemy.hasFlag);
 
-            // Hive mind integration
-            if (hiveMind != null)
+            // if the connection to the mind is strong enough, get the information from the hive. 
+            if (isConnectedToHive)
             {
-                // Get shared knowledge
-                //hiveMind.GetKnowledge(ref context);
-
-                // Report what I see back to the hive
-                if (context.playerRef != null)
-                {
-                    hiveMind.UpdateKnowledge(context);
-                }
-
-                // Add hive stats to context for actions to use
-                //context.SetData("hive_smartness", hiveMind.smartness);
-                //context.SetData("hive_coordination", hiveMind.coordination);
-                //context.SetData("squad_assignment", (int)squad);
+                HiveMind.Instance.GetKnowledge(context);
             }
         }
 
         void OnDestroy()
         {
-            if (squadLeader != null)
-            {
-                squadLeader.RemoveSubordinate(this);
-            }
         }
     }
 }

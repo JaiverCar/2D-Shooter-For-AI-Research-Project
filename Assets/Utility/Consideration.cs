@@ -12,6 +12,9 @@ namespace UtilityAI
         public string contextKey;
         public int priority = 0;
 
+        [SerializeField]
+        public List<HiveMind.squads> allowedSquads = new List<HiveMind.squads>();
+
         public float EvaluateCurve(Context context)
         {
             float inputValue = context.GetData<float>(contextKey);

@@ -55,7 +55,7 @@ namespace UtilityAI
             int startGridY = currentNode.gridY;
 
             int maxAttempts = 50;
-            int searchRadius = 5;
+            int searchRadius = 30;
 
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
@@ -74,8 +74,8 @@ namespace UtilityAI
                     return targetNode.worldPosition;
                 }
 
-                if (attempt == 15) searchRadius = 8;
-                if (attempt == 30) searchRadius = 12;
+                if (attempt == 15) searchRadius = 40;
+                if (attempt == 30) searchRadius = 50;
             }
 
             Debug.LogWarning($"[Wander] No walkable position found near grid ({startGridX}, {startGridY})");

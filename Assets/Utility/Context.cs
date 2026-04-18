@@ -22,6 +22,12 @@ namespace UtilityAI
         public Transform playerRef = null;
         public Vector3 lastPlayerPosition;
         public float lastUpdateTime;
+
+        public Vector3 lastFlagPosition;
+        public float lastFlagUpdateTime;
+
+        public bool retreating;
+        public Vector2 retreatPos;
         public Context(Brain brain)
         {
             this.brain = brain;
