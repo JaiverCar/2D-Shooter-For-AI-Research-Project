@@ -113,7 +113,8 @@ namespace UtilityAI
             s_FlagDefenders,
             s_FlagAttackers,
             s_Scouts,
-            s_PlayerAttackers
+            s_PlayerAttackers,
+            s_NoSquad
         }
 
         public void AssignPlayerAttackers()

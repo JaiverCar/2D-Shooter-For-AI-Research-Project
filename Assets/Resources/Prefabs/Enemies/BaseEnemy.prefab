@@ -159,11 +159,15 @@ MonoBehaviour:
   repathInterval: 0.2
   doAstar: 1
   AstarTarget: {x: 0, y: 0}
+  drawAStarPath: 0
+  thisBrain: {fileID: 0}
   seesFlag: 0
   flagLastKnownLocation: {x: 0, y: 0}
   seesPlayer: 0
+  hiveSeesPlayer: 0
   lastKnownPlayerLocation: {x: 0, y: 0}
   CinematicMode: 0
+  hasFlag: 0
 --- !u!114 &8264996340615861227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -210,7 +214,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3b39bea12d0537043901360dd40ef67b, type: 2}
   - {fileID: 11400000, guid: b0c3200fccc565a49967c3cfb8b3e5e2, type: 2}
   - {fileID: 11400000, guid: 5d65423a73ac6604d81540dae63e5b86, type: 2}
+  - {fileID: 11400000, guid: 33cd0a2bf107936498bdf4332ec43039, type: 2}
   thisEnemy: {fileID: 0}
+  squad: 2
+  personalConnection: 1
+  isConnectedToHive: 0
 --- !u!114 &5315412620076311430
 MonoBehaviour:
   m_ObjectHideFlags: 0
