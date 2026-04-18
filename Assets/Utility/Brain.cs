@@ -18,7 +18,6 @@ namespace UtilityAI
         public EnemyLogic thisEnemy;
 
         public HiveMind.squads squad = HiveMind.squads.s_Scouts;
-        private HiveMind.squads oldSquad = HiveMind.squads.s_Scouts;
         public float personalConnection = 1.0f;
 
         private bool wasSeingPlayer = false;
@@ -43,9 +42,6 @@ namespace UtilityAI
         {
             isConnectedToHive = HiveMind.Instance != null &&
                                  HiveMind.Instance.RecievesSignal(personalConnection);
-
-            // save the squad we are assigned to
-            oldSquad = squad;
         }
 
         // Update is called once per frame
@@ -59,11 +55,7 @@ namespace UtilityAI
                                     HiveMind.Instance.RecievesSignal(personalConnection);
             }
 
-            if (isConnectedToHive == true)
-            {
-                squad = oldSquad;
-            }
-            else
+            if (isConnectedToHive == false)
             {
                 squad = HiveMind.squads.s_NoSquad;
             }
