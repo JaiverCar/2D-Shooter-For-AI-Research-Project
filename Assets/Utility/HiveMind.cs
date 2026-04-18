@@ -196,6 +196,9 @@ namespace UtilityAI
             return false;
         }
 
-
+        public void SetSignalStrength(float newSignalStrength)
+        {
+            globalSignalStrength = newSignalStrength;
+        }
     }
 }
