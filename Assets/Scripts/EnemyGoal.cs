@@ -25,7 +25,7 @@ public class EnemyGoal : MonoBehaviour
 
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.AddEnemyScore();
+                GameManager.Instance.AddTwoMinutes();
             }
         }
     }
