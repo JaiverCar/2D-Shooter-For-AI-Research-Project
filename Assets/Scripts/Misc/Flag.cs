@@ -72,6 +72,17 @@ public class Flag : MonoBehaviour
         {
             // follow them around at a slight offset
             transform.position = new Vector3(pHolder.transform.position.x + 0.5f, pHolder.transform.position.y + 0.5f);
+
+            if (Input.GetKey(KeyCode.F))
+            {
+                // set our position to the player's last position
+                transform.position = pHolder.transform.position;
+
+                pHolder = null;
+
+                // enable our collider component
+                GetComponent<CircleCollider2D>().enabled = true;
+            }
         }
 
         // if an enemy is holding us
