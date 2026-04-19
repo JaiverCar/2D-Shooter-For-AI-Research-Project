@@ -30,6 +30,8 @@ public class EnemyLogic : MonoBehaviour
 
     public bool isHiveNode = false;
 
+    public bool isTower = false;
+
     public bool doChasePlayer = true;
 
     // tile to move to
@@ -199,7 +201,7 @@ public class EnemyLogic : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (drawAStarPath == true && isHiveNode == false)
+        if (drawAStarPath == true && isHiveNode == false && isTower == false)
         {
             DebugDrawAStarPath();
         }
@@ -366,7 +368,7 @@ public class EnemyLogic : MonoBehaviour
 
 
         // if this is not a leader it will be affected by the flocking logic
-        if (isLeader == false && isHiveNode == false)
+        if (isLeader == false && isHiveNode == false && isTower == false)
         {
             Vector3 movementTargetLocation = currTarget;
 
@@ -543,6 +545,10 @@ public class EnemyLogic : MonoBehaviour
             GetComponent<EnemyLogic>().SetAggroState(true); //Aggro when hit
             if (Health <= 0) //We're dead, so destroy ourself
             {
+                if (isTower)
+                {
+                    Destroy(this.gameObject);
+                }
                 if (isHiveNode)
                 {
                     HiveMind.Instance.globalSignalStrength -= 0.50f;
@@ -554,7 +560,7 @@ public class EnemyLogic : MonoBehaviour
                     GetComponent<SpriteRenderer>().color = Color.gray;
                     return;
                 }
-                var enemyGoal = GameObject.Find("EnemyGoal");
+                var enemyGoal = GameObject.Find("EnemyTower");
                 if (enemyGoal != null)
                 {
                     if (UnityEngine.Random.Range(0.0f, 1.0f) <= DropChance)
