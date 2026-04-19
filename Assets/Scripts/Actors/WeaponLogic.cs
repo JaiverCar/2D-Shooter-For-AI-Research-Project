@@ -72,10 +72,37 @@ public class WeaponLogic : MonoBehaviour
         if (enemy != null && enemy.Aggroed == false)
             return;
 
-        //If the parent is an enemy and it is wandering, don't shoot
-        if (enemy != null)
-            return;
+        //If the parent is the player, just shoot forward
+        if (player != null)
+        {
+            ShootForward();
+        }
 
+        //If the parent is an enemy the conidions change
+        if (enemy != null)
+        {
+            var playerRef = FindObjectOfType<PlayerLogic>();
+
+            if (playerRef != null)
+            {
+                // get the direction to the palyer
+                Vector3 playerDir = (playerRef.transform.position - transform.position).normalized;
+
+                // take the dot product to see if the player is infront of us
+                float playerdp = Vector3.Dot(transform.up, playerDir);
+
+                // if they are infront of us
+                if (playerdp > 0.7f)
+                {
+                    ShootForward();
+                }
+            }
+        }
+    }
+
+
+    void ShootForward()
+    {
         int bulletsLeft = BulletsPerShot;
         float angleAdjust = 0.0f;
         //Odd number of bullets means fire the first one straight ahead
