@@ -548,6 +548,7 @@ public class EnemyLogic : MonoBehaviour
                 if (isTower)
                 {
                     Destroy(this.gameObject);
+                    GameManager.Instance.winGame();
                 }
                 if (isHiveNode)
                 {
