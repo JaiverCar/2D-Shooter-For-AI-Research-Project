@@ -11,6 +11,7 @@ Description:
 *******************************************************************************/
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UtilityAI;
 using static PCG;
@@ -97,6 +98,10 @@ public class EnemyLogic : MonoBehaviour
     public Vector2 AstarTarget = new Vector2(0, 0);
     public bool drawAStarPath = false;
     public bool actionChange = false;
+    // used to draw the Astar path
+    private LineRenderer debugAStarPath;
+    // used to draw the Astar circles
+    List<LineRenderer> debugDrawCircles = new List<LineRenderer>();
 
     // Stable path origin: pathfind from the last committed grid node, not the live transform
     Node lastPathNode = null;
@@ -190,9 +195,23 @@ public class EnemyLogic : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (drawAStarPath == true)
+        if (drawAStarPath == true && isHiveNode == false)
         {
             DebugDrawAStarPath();
+        }
+        else 
+        {
+            if (debugAStarPath != null)
+            {
+                Destroy(debugAStarPath.gameObject);
+                debugAStarPath = null;
+            }
+
+            foreach (var debugCircle in debugDrawCircles)
+            {
+                Destroy(debugCircle.gameObject);
+            }
+            debugDrawCircles.Clear();
         }
 
         //Don't do anything if in cinematic mode
@@ -577,86 +596,89 @@ public class EnemyLogic : MonoBehaviour
     { 
         return leader; 
     }
-
-
+    
     private void DebugDrawAStarPath()
     {
+        // Don't draw if the path is null
         if (path == null || path.Count == 0) return;
 
-        for (int i = 0; i < path.Count - 1; i++)
-            Debug.DrawLine(path[i], path[i + 1], Color.green);
+        // Delete the old Line Renderer
+        if (debugAStarPath != null)
+        {
+            Destroy(debugAStarPath.gameObject);
+            debugAStarPath = null;
+        }
 
-        if (waypointIndex < path.Count)
-            DebugDrawCircle(path[waypointIndex], 0.15f, Color.red);//Gizmos.DrawSphere(path[waypointIndex], 0.15f);
+        // delete all the old circles
+        foreach (var debugCircle in debugDrawCircles)
+        {
+            Destroy(debugCircle.gameObject);
+        }
+        debugDrawCircles.Clear();
 
-
-        if (path == null || path.Count == 0) return;
+        // Create a new Line Renderer
+        debugAStarPath = CreateDebugLine(path.Count, Color.red, Color.green);
 
         for (int i = 0; i < path.Count; i++)
         {
             // color goes from red at start to green at end
             Color setColor = Color.Lerp(Color.red, Color.green, (float)i / path.Count);
-            DebugDrawCircle(path[i], 0.1f, setColor); //Gizmos.DrawSphere(path[i], 0.1f);
+            DebugDrawCircle(path[i], 0.1f, setColor);
 
-            if (i < path.Count - 1)
-                Debug.DrawLine(path[i], path[i + 1], setColor);//Gizmos.DrawLine(path[i], path[i + 1]);
+            debugAStarPath.SetPosition(i, path[i]);
 
-            // draw the index number
-            //UnityEditor.Handles.Label(path[i], i.ToString());
         }
+
+        if (waypointIndex < path.Count)
+            DebugDrawCircle(path[waypointIndex], 0.1f, Color.red, 9999);
     }
 
-    public static void DebugDrawCircle(Vector2 center, float radius, Color color, float duration = 0f, int segments = 32)
+    private void DebugDrawCircle(Vector2 center, float radius, Color color, int renderOrder = 9998, float duration = 0f, int segments = 32)
     {
+        LineRenderer debugCircle = CreateDebugLine(segments, color, color, renderOrder);
+
+        debugDrawCircles.Add(debugCircle);
+
         float angleStep = 360f / segments;
         float angle = 0f;
 
         Vector2 prevPoint = center + new Vector2(Mathf.Cos(0), Mathf.Sin(0)) * radius;
 
-        for (int i = 1; i <= segments; i++)
+        Vector2 startPos = prevPoint;
+
+        for (int i = 0; i < segments; i++)
         {
             angle += angleStep * Mathf.Deg2Rad;
 
+            debugCircle.SetPosition(i, prevPoint);
+
             Vector2 nextPoint = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
-            Debug.DrawLine(prevPoint, nextPoint, color, duration);
             prevPoint = nextPoint;
         }
+
+        angle += angleStep * Mathf.Deg2Rad;
+
+        debugCircle.SetPosition(31, prevPoint);
     }
 
-    //private void OnDrawGizmos()
-    //{
-    //    if (drawAStarPath == true)
-    //    {
-    //        if (path == null || path.Count == 0) return;
 
-    //        Gizmos.color = Color.green;
-    //        for (int i = 0; i < path.Count - 1; i++)
-    //            Gizmos.DrawLine(path[i], path[i + 1]);
+    // start color = red, end color = green
+    public LineRenderer CreateDebugLine(int segmentCount, Color startColor, Color endColor, int renderOrder = 9997, float width = 0.05f)
+    {
+        var go = new GameObject("DebugLine");
+        var lr = go.AddComponent<LineRenderer>();
 
-    //        Gizmos.color = Color.red;
-    //        if (waypointIndex < path.Count)
-    //            Gizmos.DrawSphere(path[waypointIndex], 0.15f);
+        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.material.renderQueue = renderOrder;
+        lr.startColor = startColor;
+        lr.endColor = endColor;
+        lr.startWidth = lr.endWidth = width;
+        lr.positionCount = segmentCount;
+        lr.useWorldSpace = true;
 
-
-    //        if (path == null || path.Count == 0) return;
-
-    //        for (int i = 0; i < path.Count; i++)
-    //        {
-    //            // color goes from red at start to green at end
-    //            Gizmos.color = Color.Lerp(Color.red, Color.green, (float)i / path.Count);
-    //            Gizmos.DrawSphere(path[i], 0.1f);
-
-    //            if (i < path.Count - 1)
-    //                Gizmos.DrawLine(path[i], path[i + 1]);
-
-    //            // draw the index number
-    //            UnityEditor.Handles.Label(path[i], i.ToString());
-    //        }
-    //    }
-    //}
-
-
+        return lr; 
+    }
 }
 
 
