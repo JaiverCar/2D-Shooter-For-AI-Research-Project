@@ -93,20 +93,16 @@ public class GameManager : MonoBehaviour
     public void winGame()
     {
         stopTimer();
-        Debug.Log("Player wins! Final time: " + elapsedTime);
 
         if (winUI == null)
         {
-            Debug.LogError("WinUI is NULL!");
             return;
         }
 
         winUI.SetActive(true);
-        Debug.Log("WinUI activated");
 
         if (finalTimeText == null)
         {
-            Debug.LogError("FinalTime text is NOT assigned in Inspector!");
             return;
         }
 
@@ -115,7 +111,6 @@ public class GameManager : MonoBehaviour
         int milliseconds = Mathf.FloorToInt((elapsedTime * 1000f) % 1000f);
         string timeString = string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, milliseconds);
         finalTimeText.text = timeString;
-        Debug.Log($"Set FinalTime to: {timeString}");
     }
 
     public void AddEnemyScore(int amount = 1)
