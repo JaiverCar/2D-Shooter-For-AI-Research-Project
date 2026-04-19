@@ -168,12 +168,12 @@ public class TerrainAnalysis : MonoBehaviour
         grid = null; // Force grid reference refresh
 
         // FORCE visualization to be on
-        showVisualization = true;
-        showVisibilityLayers = true;
-        showOpennessLayers = true;
-        showEnemyVisionLayers = true;
-        showOccupancyLayers = true;
-        showCustomLayers = true;
+        showVisualization = false;
+        showVisibilityLayers = false;
+        showOpennessLayers = false;
+        showEnemyVisionLayers = false;
+        showOccupancyLayers = false;
+        showCustomLayers = false;
 
         Debug.Log("TerrainAnalysis: Initialized - Visualization ENABLED");
     }

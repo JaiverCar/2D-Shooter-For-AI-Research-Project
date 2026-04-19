@@ -173,8 +173,12 @@ public class PlayerLogic : MonoBehaviour
                 // fire an event when the player dies
                 OnPlayerDied?.Invoke();
 
-                gameObject.SetActive(false);
-                PCGObject.ResetLevel(1.5f); //Reset after a 1.5 second delay
+                Health = StartingHealth;
+
+                transform.position = new Vector3(-19.25f, 18.13f, 0.0f);
+
+                //gameObject.SetActive(false);
+                //PCGObject.ResetLevel(1.5f); //Reset after a 1.5 second delay
             }
         }
     }
