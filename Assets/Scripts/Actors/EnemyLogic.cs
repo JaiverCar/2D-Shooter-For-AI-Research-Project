@@ -96,6 +96,7 @@ public class EnemyLogic : MonoBehaviour
     public bool doAstar = true;
     public Vector2 AstarTarget = new Vector2(0, 0);
     public bool drawAStarPath = false;
+    public bool actionChange = false;
 
     // Stable path origin: pathfind from the last committed grid node, not the live transform
     Node lastPathNode = null;
@@ -244,6 +245,13 @@ public class EnemyLogic : MonoBehaviour
                 path == null ||
                 (cooldownReady && atWaypoint && (targetMovedEnough || atEndOfPath) ||
                 (signal != prevSignal));
+
+            //repath if action changed
+            if(actionChange)
+            {
+                actionChange = false;
+                shouldRepath = true;
+            }
 
             prevSignal = signal;
 

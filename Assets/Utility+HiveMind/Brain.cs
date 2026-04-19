@@ -183,6 +183,7 @@ namespace UtilityAI
             {
                 if(previousAction != bestAction)
                 {
+                    thisEnemy.actionChange = true;
                     previousAction.OnExit(context);
                 }
             }
