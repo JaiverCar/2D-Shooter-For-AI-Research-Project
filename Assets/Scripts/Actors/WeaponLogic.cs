@@ -75,40 +75,29 @@ public class WeaponLogic : MonoBehaviour
         //If the parent is the player, just shoot forward
         if (player != null)
         {
-            ShootForward();
+            PlayerShootForward();
         }
 
-        //If the parent is an enemy the conidions change
+        //If the parent is an enemy
         if (enemy != null)
         {
             var playerRef = FindObjectOfType<PlayerLogic>();
 
             if (playerRef != null)
             {
-                // get the direction to the palyer
-                Vector3 playerDir = (playerRef.transform.position - transform.position).normalized;
-
-                // take the dot product to see if the player is infront of us
-                float playerdp = Vector3.Dot(transform.up, playerDir);
-
-                // if they are infront of us
-                if (playerdp > 0.7f)
-                {
-                    ShootForward();
-                }
+                EnemyShootForward();
             }
         }
     }
 
-
-    void ShootForward()
+    void PlayerShootForward()
     {
         int bulletsLeft = BulletsPerShot;
         float angleAdjust = 0.0f;
         //Odd number of bullets means fire the first one straight ahead
         if (bulletsLeft % 2 == 1)
         {
-            FireBullet(0.0f);
+            PlayerFireBullet(0.0f);
             bulletsLeft--;
         }
         else //Even number of bullets means we need to adjust the angle slightly
@@ -118,19 +107,72 @@ public class WeaponLogic : MonoBehaviour
         //The rest of the bullets are spread out evenly
         while (bulletsLeft > 0)
         {
-            FireBullet(BulletSpreadAngle * (bulletsLeft / 2) - (BulletSpreadAngle * angleAdjust));
-            FireBullet(-BulletSpreadAngle * (bulletsLeft / 2) + (BulletSpreadAngle * angleAdjust));
+            PlayerFireBullet(BulletSpreadAngle * (bulletsLeft / 2) - (BulletSpreadAngle * angleAdjust));
+            PlayerFireBullet(-BulletSpreadAngle * (bulletsLeft / 2) + (BulletSpreadAngle * angleAdjust));
             bulletsLeft -= 2; //Must do this afterwards, otherwise the angle will be wrong
         }
         //Weapon is now on cooldown
         ShotTimer = 0;
     }
 
-    void FireBullet(float rotate)
+    void PlayerFireBullet(float rotate)
     {
         //Instantiate a bullet and rotate it the given amount
         var bullet = Instantiate(BulletPrefab, transform.position, Quaternion.identity);
         var fwd = RotateVector(transform.up, Mathf.PI * rotate / 180.0f);
+        bullet.transform.up = fwd.normalized;
+
+        //Multiply the bullet speed by the player or enemy speed, so the bullets aren't too slow
+        float bulletSpeed = BulletSpeed;
+        if (transform.parent.GetComponent<PlayerLogic>() != null)
+            bulletSpeed *= transform.parent.GetComponent<PlayerLogic>().Speed;
+        else if (transform.parent.GetComponent<EnemyLogic>() != null)
+            bulletSpeed *= transform.parent.GetComponent<EnemyLogic>().Speed;
+
+        //Cap bullet speeds at a reasonable value to prevent tunnelling
+        bulletSpeed = Mathf.Min(bulletSpeed, MaximumBulletSpeed);
+
+        //Set the bullet speed and range
+        bullet.GetComponent<Rigidbody2D>().velocity = fwd * bulletSpeed;
+        bullet.GetComponent<BulletLogic>().BulletRangeLeft = BulletRange;
+    }
+
+    void EnemyShootForward()
+    {
+        int bulletsLeft = BulletsPerShot;
+        float angleAdjust = 0.0f;
+        //Odd number of bullets means fire the first one straight ahead
+        if (bulletsLeft % 2 == 1)
+        {
+            EnemyFireBullet(0.0f);
+            bulletsLeft--;
+        }
+        else //Even number of bullets means we need to adjust the angle slightly
+        {
+            angleAdjust = 0.5f;
+        }
+        //The rest of the bullets are spread out evenly
+        while (bulletsLeft > 0)
+        {
+            EnemyFireBullet(BulletSpreadAngle * (bulletsLeft / 2) - (BulletSpreadAngle * angleAdjust));
+            EnemyFireBullet(-BulletSpreadAngle * (bulletsLeft / 2) + (BulletSpreadAngle * angleAdjust));
+            bulletsLeft -= 2; //Must do this afterwards, otherwise the angle will be wrong
+        }
+        //Weapon is now on cooldown
+        ShotTimer = 0;
+    }
+
+    void EnemyFireBullet(float rotate)
+    {
+        //Instantiate a bullet and rotate it the given amount
+        var bullet = Instantiate(BulletPrefab, transform.position, Quaternion.identity);
+
+        // get the direction to the palyer
+        var playerRef = FindObjectOfType<PlayerLogic>();
+        Vector3 playerDir = (playerRef.transform.position - transform.position).normalized;
+        
+        // rotate the bullet
+        var fwd = RotateVector(playerDir, Mathf.PI * rotate / 180.0f);
         bullet.transform.up = fwd.normalized;
 
         //Multiply the bullet speed by the player or enemy speed, so the bullets aren't too slow
