@@ -339,7 +339,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 15
+  m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &42289803 stripped
 Transform:
@@ -571,7 +571,7 @@ Transform:
   m_Children:
   - {fileID: 1938577946}
   m_Father: {fileID: 0}
-  m_RootOrder: 14
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &160283260 stripped
 Transform:
@@ -1424,7 +1424,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!58 &280324702
 CircleCollider2D:
@@ -1653,7 +1653,7 @@ Transform:
   m_Children:
   - {fileID: 569852823}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &311390091
 MonoBehaviour:
@@ -2646,7 +2646,7 @@ PrefabInstance:
     - target: {fileID: 8615021814056089060, guid: b4cff1960f5797e448ff087c5eb3bcbc,
         type: 3}
       propertyPath: m_RootOrder
-      value: 11
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8615021814056089060, guid: b4cff1960f5797e448ff087c5eb3bcbc,
         type: 3}
@@ -3223,7 +3223,7 @@ PrefabInstance:
     - target: {fileID: 5389104116952170908, guid: 493880e49fd62424690e0749d46fac11,
         type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5389104116952170908, guid: 493880e49fd62424690e0749d46fac11,
         type: 3}
@@ -4659,7 +4659,7 @@ PrefabInstance:
     - target: {fileID: 3810410929087927357, guid: 8e96e4d9babe7dd429bae106eaa0b5f6,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3810410929087927357, guid: 8e96e4d9babe7dd429bae106eaa0b5f6,
         type: 3}
@@ -4743,27 +4743,27 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 2101122427}
     m_Modifications:
     - target: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
         type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 22.26
+      value: 9.443226
       objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -22.57
+      value: -19.111044
       objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.8297682
       objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
         type: 3}
@@ -4773,17 +4773,17 @@ PrefabInstance:
     - target: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
         type: 3}
@@ -5322,7 +5322,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &978674030
 PrefabInstance:
@@ -5715,6 +5715,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b4cff1960f5797e448ff087c5eb3bcbc, type: 3}
+--- !u!4 &1058846921 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6048948920214717229, guid: b95ccf3cb32b89f4892200f0b7e2b35b,
+    type: 3}
+  m_PrefabInstance: {fileID: 834741574}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1068130045
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6445,7 +6451,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1143873250
 PrefabInstance:
@@ -6547,7 +6553,7 @@ PrefabInstance:
     - target: {fileID: 3067379227310947800, guid: af85ed72d24220648b4e8a02164d2901,
         type: 3}
       propertyPath: m_RootOrder
-      value: 7
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3067379227310947800, guid: af85ed72d24220648b4e8a02164d2901,
         type: 3}
@@ -7578,7 +7584,7 @@ Transform:
   - {fileID: 528756405}
   - {fileID: 479790669}
   m_Father: {fileID: 0}
-  m_RootOrder: 12
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1266160018 stripped
 MonoBehaviour:
@@ -9947,7 +9953,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1811313429
 PrefabInstance:
@@ -10729,7 +10735,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1936664407
 PrefabInstance:
@@ -11356,8 +11362,9 @@ Transform:
   - {fileID: 631064695}
   - {fileID: 672651709}
   - {fileID: 1727058573}
+  - {fileID: 1058846921}
   m_Father: {fileID: 0}
-  m_RootOrder: 13
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &2106644337 stripped
 Transform:
