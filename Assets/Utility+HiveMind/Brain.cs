@@ -55,7 +55,7 @@ namespace UtilityAI
             }
 
             // Store original color of this enemies sprite
-            if (thisEnemy)
+            if (thisEnemy != null)
             {
                 ogColor = thisEnemy.GetComponent<SpriteRenderer>().color;
             }
@@ -70,34 +70,40 @@ namespace UtilityAI
         void Update()
         {
             // Every n minutes check if the enemy should be connected to the hive mind
-            hiveCheckTimer += Time.deltaTime;
-            if (hiveCheckTimer >= hiveCheckInterval)
+            if (squad != HiveMind.squads.s_nonDrone)
             {
-                hiveCheckTimer = 0f;
-                isConnectedToHive = HiveMind.Instance != null && HiveMind.Instance.RecievesSignal(personalConnection);
-            }
-            
-            // if the enemy is not connected to the hive mind, remove squad assignment
-            // else, change color dependent on squad assignment
-            if (isConnectedToHive == false)
-            {
-                HiveMind.Instance.SwitchSquad(this, HiveMind.squads.s_NoSquad);
-            }
-            else if(squad == HiveMind.squads.s_NoSquad)
-            {
-                squad = HiveMind.squads.s_Scouts;
-                HiveMind.Instance.SwitchSquad(this, HiveMind.squads.s_Scouts);
+                hiveCheckTimer += Time.deltaTime;
+                if (hiveCheckTimer >= hiveCheckInterval)
+                {
+                    hiveCheckTimer = 0f;
+                    isConnectedToHive = HiveMind.Instance != null && HiveMind.Instance.RecievesSignal(personalConnection);
+                }
+
+                // if the enemy is not connected to the hive mind, remove squad assignment
+                // else, change color dependent on squad assignment
+                if (isConnectedToHive == false)
+                {
+                    HiveMind.Instance.SwitchSquad(this, HiveMind.squads.s_NoSquad);
+                }
+                else if (squad == HiveMind.squads.s_NoSquad)
+                {
+                    squad = HiveMind.squads.s_Scouts;
+                    HiveMind.Instance.SwitchSquad(this, HiveMind.squads.s_Scouts);
+                }
             }
 
             // If enemy reference is null, try to get it agian
             if (thisEnemy == null)
             {
                 thisEnemy = GetComponent<EnemyLogic>();
-                ogColor = thisEnemy.GetComponent<SpriteRenderer>().color;
+                if (thisEnemy != null)
+                {
+                    ogColor = thisEnemy.GetComponent<SpriteRenderer>().color;
+                }
             }
 
             // Set enemy color based on squad assignment
-            if (thisEnemy != null)
+            if (thisEnemy != null && squad != HiveMind.squads.s_nonDrone)
             {
                 Color newColor;
                 switch (squad)

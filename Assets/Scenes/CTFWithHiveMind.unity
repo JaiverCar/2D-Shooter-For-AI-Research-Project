@@ -2548,6 +2548,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2101122427}
     m_Modifications:
+    - target: {fileID: 2291430317323205923, guid: 603520304edd99243b579031322ec0ed,
+        type: 3}
+      propertyPath: squad
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: 603520304edd99243b579031322ec0ed,
         type: 3}
       propertyPath: m_RootOrder
@@ -3550,6 +3555,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2101122427}
     m_Modifications:
+    - target: {fileID: 2291430317323205923, guid: 603520304edd99243b579031322ec0ed,
+        type: 3}
+      propertyPath: squad
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 6048948920214717229, guid: 603520304edd99243b579031322ec0ed,
         type: 3}
       propertyPath: m_RootOrder
@@ -10534,6 +10544,7 @@ MonoBehaviour:
   - {fileID: 1759056377}
   scouts: []
   disconnected: []
+  nonDrones: []
   flagAttackers: []
   hiveSeesFlag: 0
   lastKnownFlagPosition: {x: 0, y: 0}

@@ -14,6 +14,7 @@ namespace UtilityAI
         public List<Brain> subordinates;
         public List<Brain> scouts;
         public List<Brain> disconnected;
+        public List<Brain> nonDrones;
 
         // Variables for hive knowing where flag is
         public List<Brain> flagAttackers;
@@ -46,8 +47,17 @@ namespace UtilityAI
 
         private void Start()
         {
-            // Assign all subordinates to scouts 
-            scouts = subordinates;
+            foreach(Brain brain in subordinates)
+            {
+                if(brain.squad == squads.s_nonDrone)
+                {
+                    nonDrones.Add(brain);
+                }
+                else
+                {
+                    scouts.Add(brain);
+                }
+            }
         }
 
         private void Update()
@@ -146,7 +156,8 @@ namespace UtilityAI
             s_FlagAttackers,
             s_Scouts,
             s_PlayerAttackers,
-            s_NoSquad
+            s_NoSquad,
+            s_nonDrone
         }
 
         // Assigns the closest enemies to the player attacker squad
