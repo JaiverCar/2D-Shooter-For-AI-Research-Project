@@ -17,17 +17,17 @@ MonoBehaviour:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0.0047073364
-        value: 0.91960144
-        inSlope: 0.00028733956
-        outSlope: 0.00028733956
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
         tangentMode: 34
         weightedMode: 0
         inWeight: 0
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.89357173
-        value: 0.91985685
+        time: 0.95
+        value: 0
         inSlope: 0.0000492966
         outSlope: 0.0000492966
         tangentMode: 0
@@ -37,8 +37,8 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 1
         value: 1
-        inSlope: 0.75302505
-        outSlope: 0.75302505
+        inSlope: 19.999996
+        outSlope: 19.999996
         tangentMode: 34
         weightedMode: 0
         inWeight: 0.33333334
@@ -47,5 +47,5 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     contextKey: hasFlag
-    priority: 0
+    priority: 1
     allowedSquads: 04000000

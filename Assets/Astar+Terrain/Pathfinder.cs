@@ -1,25 +1,34 @@
-using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using UnityEditor.PackageManager.Requests;
 using UnityEngine;
-
 using Grid = AStarGrid;
 
 public class Pathfinder : MonoBehaviour
 {
+    // Instance for singleton
     public static Pathfinder Instance;
 
-    void Awake() => Instance = this;
+    void Awake()
+    {
+        Instance = this;
+    }
 
+    // vars for astar search
     int toSearchCount;
-
     int currIteration = 1;
     static int GRID_MAX_NODES = 800 * 800;
-    Node[] openSet = new Node[800 * 800];
-
+    Node[] openSet = new Node[GRID_MAX_NODES];
     float currHeuristic = 0.0f;
 
+    // Finds an Astar path between two positions
+    // Params:
+    // startPos - starting position
+    // targetPos - goal position
+    // weight - heuristic weight
+    // stpuidity - enemies stupidity value (max is 10)
+    // rubberbandOn - if the path should be rubberbanded
+    // smoothOn - if the path should be smoothed
+    // Returns: the optimal path from startPos to targetPos
     public List<Vector2> FindPath(Vector2 startPos, Vector2 targetPos, float weight = 1.0f, float stupidity = 0.0f, bool rubberbandOn = true, bool smoothOn = true)
     {
         Node startNode = Grid.Instance.NodeFromWorldPoint(startPos);
@@ -184,18 +193,28 @@ public class Pathfinder : MonoBehaviour
         return path;
     }
 
+    // Calculates the Heuristic value between two nodes
+    // Params:
+    // from - first node
+    // goal - second node
+    // weight - extra weight to multiply agains node costs
+    // stupidity - the enemies current stupidity value 
+    // Returns: new heurstic value for a node
     public float CalculateHeuristic(Vector2 from, Vector2 goal, float weight = 1.0f, float stupidity = 0.0f)
     {
-        //distance between nodes
+        //distance between nodes (using manhattan distance)
         int dx = (int)math.abs(from.x - goal.x);
         int dy = (int)math.abs(from.y - goal.y);
-
         float newH = math.sqrt((dx * dx + dy * dy));
-        newH += UnityEngine.Random.Range(0.0f, stupidity); // stupidity = 0 is smart, 2+ is dumb
+        
+        //Depending on how the enemies stupidity value, adds random noise to nodes cost
+        newH += UnityEngine.Random.Range(0.0f, stupidity);
+
         return newH * weight;
     }
 
-
+    // Rubberbands the path (removes unecessary nodes)
+    // Params: reversedPath - the current Astar path
     void Rubberband(List<Vector2> reversedPath)
     {
         // dont update if empty
@@ -237,7 +256,11 @@ public class Pathfinder : MonoBehaviour
 
     }
 
-
+    // Catmull Rom calculation for smoothing points
+    // Params:
+    // p1, p2, p3, p4 - the 4 points to smooth between
+    // t - the distance between the points to add in new point
+    // Returns: new smoothed point
     Vector2 CatmullRom(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, float t)
     {
         Vector2 outputPoint =
@@ -249,6 +272,9 @@ public class Pathfinder : MonoBehaviour
         return outputPoint;
     }
 
+    // Smooths an Astar path
+    // Params: reversedPath - the current Astar path
+    // Params: extraPoints - how many points to add between each points
     void Smooth(List<Vector2> reversedPath, int extraPoints = 3)
     {
         if (reversedPath.Count < 3 || extraPoints <= 0)
@@ -307,7 +333,8 @@ public class Pathfinder : MonoBehaviour
         reversedPath.AddRange(newPath);
     }
 
-
+    // Algorithm for smoothing paths that have been rubberbanded
+    // Params: reversedPath - current AStar path
     void RubberAndSmooth(List<Vector2> reversedPath)
     {
         List<Vector2> newPath = reversedPath;
@@ -341,8 +368,6 @@ public class Pathfinder : MonoBehaviour
         }
         reversedPath = newPath;
     }
-
-
 }
 
 

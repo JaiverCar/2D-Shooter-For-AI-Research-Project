@@ -1,10 +1,16 @@
-    
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 
+/*********************************************************************
+ * Note: the terrain register and system was set up ny copilot
+ * for the same reason as the grid system, it was not a good use of 
+ * time for the purposes of this assignment
+ * 
+ * Things written on lines 559 and above are written by hand using the
+ * terrain analysis assignment (James Hardy's)
+ *********************************************************************/
 
 
 // Helper class for storing float values per grid cell
@@ -551,10 +557,13 @@ public class TerrainAnalysis : MonoBehaviour
         return (ua >= 0.0f && ua <= 1.0f && ub >= 0.0f && ub <= 1.0f);
     }
 
-    // Return the four corners of a cell (for checking wall sides)
+    /***************************************************
+     * Everything here down was written by hand 
+     * Using terrain analysis assignment (James Hardy's)
+     ***************************************************/
     private Vector2[] GetCellCorners(int row, int col)
     {
-        // Get the actual size of each cell (node diameter)
+        // Get the actual size of each cell
         float cellSize = grid.nodeRadius * 2f;
         float halfSize = cellSize * 0.5f;
 
@@ -630,7 +639,6 @@ public class TerrainAnalysis : MonoBehaviour
         int largestRow = math.max(row0, row1);
         int largestCol = math.max(col0, col1);
 
-        // Expand search by one cell
         smallestRow = math.max(0, smallestRow - 1);
         smallestCol = math.max(0, smallestCol - 1);
         largestRow = math.min(largestRow + 1, grid.gridSizeY - 1);
@@ -640,7 +648,7 @@ public class TerrainAnalysis : MonoBehaviour
         {
             for (int c = smallestCol; c <= largestCol; c++)
             {
-                if (!grid.IsWalkable(c, r)) // IsWalkable takes (x, y) = (col, row)
+                if (!grid.IsWalkable(c, r))
                 {
                     Vector2[] corners = GetCellCorners(r, c);
 
@@ -665,9 +673,9 @@ public class TerrainAnalysis : MonoBehaviour
         {
             for (int c = 0; c < grid.gridSizeX; c++)
             {
-                Vector2 currPos = new Vector2(c, r); // x=col, y=row
+                Vector2 currPos = new Vector2(c, r); 
 
-                if (grid.IsValidGridPos(currPos) && grid.IsWalkable(c, r)) // IsWalkable takes (x, y) = (col, row)
+                if (grid.IsValidGridPos(currPos) && grid.IsWalkable(c, r)) 
                 {
                     float d = DistanceToClosestWall(r, c);
                     float opennessVal = 1.0f / (d * d);
@@ -686,7 +694,7 @@ public class TerrainAnalysis : MonoBehaviour
         {
             for (int c = 0; c < cols; c++)
             {
-                if (!grid.IsWalkable(c, r)) // IsWalkable takes (x, y) = (col, row)
+                if (!grid.IsWalkable(c, r))
                     continue;
 
                 float visibleCount = 0.0f;
@@ -696,7 +704,7 @@ public class TerrainAnalysis : MonoBehaviour
                 {
                     for (int c1 = 0; c1 < cols; c1++)
                     {
-                        if ((r1 == r && c1 == c) || !grid.IsWalkable(c1, r1)) // IsWalkable takes (x, y) = (col, row)
+                        if ((r1 == r && c1 == c) || !grid.IsWalkable(c1, r1))
                             continue;
 
                         if (IsClearPath(r, c, r1, c1))
@@ -728,9 +736,9 @@ public class TerrainAnalysis : MonoBehaviour
         {
             for (int c = 0; c < grid.gridSizeX; c++)
             {
-                Vector2 currPos = new Vector2(c, r); // x=col, y=row
+                Vector2 currPos = new Vector2(c, r);
 
-                if (grid.IsValidGridPos(currPos) && grid.IsWalkable(c, r)) // IsWalkable takes (x, y) = (col, row)
+                if (grid.IsValidGridPos(currPos) && grid.IsWalkable(c, r))
                 {
                     layer.SetValue(r, c, 0.0f);
 
@@ -746,17 +754,17 @@ public class TerrainAnalysis : MonoBehaviour
         // Mark neighbors of visible cells as 0.5
         foreach (Vector2 v in visibles)
         {
-            int c = (int)v.x; // v.x is column
-            int r = (int)v.y; // v.y is row
+            int c = (int)v.x;
+            int r = (int)v.y;
 
             for (int r1 = -1; r1 <= 1; r1++)
             {
                 for (int c1 = -1; c1 <= 1; c1++)
                 {
-                    Vector2 currNeighbor = new Vector2(c + c1, r + r1); // x=col, y=row
+                    Vector2 currNeighbor = new Vector2(c + c1, r + r1);
 
                     if (!grid.IsValidGridPos(currNeighbor) || 
-                        !grid.IsWalkable(c + c1, r + r1) ||  // IsWalkable takes (x, y) = (col, row)
+                        !grid.IsWalkable(c + c1, r + r1) ||
                         (row == r + r1 && col == c + c1))
                         continue;
 
@@ -786,9 +794,9 @@ public class TerrainAnalysis : MonoBehaviour
         {
             for (int c = 0; c < grid.gridSizeX; c++)
             {
-                Vector2 currPos = new Vector2(c, r); // x=col, y=row
+                Vector2 currPos = new Vector2(c, r);
 
-                if (grid.IsValidGridPos(currPos) && grid.IsWalkable(c, r)) // IsWalkable takes (x, y) = (col, row)
+                if (grid.IsValidGridPos(currPos) && grid.IsWalkable(c, r))
                 {
                     Node node = grid.GridGet(r, c);
                     Vector2 agentToCell = (node.worldPosition - agentPos).normalized;
@@ -813,11 +821,11 @@ public class TerrainAnalysis : MonoBehaviour
         {
             for (int c = 0; c < cols; c++)
             {
-                Vector2 currPos = new Vector2(c, r); // x=col, y=row
+                Vector2 currPos = new Vector2(c, r);
                 float currVal = layer.GetValue(r, c);
                 float highestValue = 0.0f;
 
-                if (grid.IsValidGridPos(currPos) && grid.IsWalkable(c, r)) // IsWalkable takes (x, y) = (col, row)
+                if (grid.IsValidGridPos(currPos) && grid.IsWalkable(c, r))
                 {
                     for (int r1 = r - 1; r1 <= r + 1; r1++)
                     {
@@ -826,9 +834,9 @@ public class TerrainAnalysis : MonoBehaviour
                             if (r1 == r && c1 == c)
                                 continue;
 
-                            Vector2 otherPos = new Vector2(c1, r1); // x=col, y=row
+                            Vector2 otherPos = new Vector2(c1, r1);
 
-                            if (!grid.IsValidGridPos(otherPos) || !grid.IsWalkable(c1, r1)) // IsWalkable takes (x, y) = (col, row)
+                            if (!grid.IsValidGridPos(otherPos) || !grid.IsWalkable(c1, r1))
                                 continue;
 
                             if (!IsClearPath(r, c, r1, c1))
@@ -1010,8 +1018,6 @@ public class TerrainAnalysis : MonoBehaviour
         if (grid.IsValidGridPos(highestPos))
         {
             Node targetNode = grid.GridGet((int)highestPos.x, (int)highestPos.y);
-            // You could integrate this with your pathfinding here
-            // For example: enemy.GetComponent<EnemyLogic>().AstarTarget = targetNode.worldPosition;
             return true;
         }
 

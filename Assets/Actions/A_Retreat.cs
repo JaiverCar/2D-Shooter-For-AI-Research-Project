@@ -122,7 +122,7 @@ namespace UtilityAI
                     if (!grid.IsWalkable(checkCol, checkRow))
                         continue;
 
-                    // Get visibility value (lower = better for hiding)
+                    // Get visibility value
                     float visibility = visibilityLayer.layer.GetValue(checkRow, checkCol);
 
                     // Skip if too visible
@@ -132,8 +132,7 @@ namespace UtilityAI
                     // Calculate distance from current position
                     float distance = Mathf.Sqrt(r * r + c * c);
 
-                    // Calculate score: balance between distance (want close) and visibility (want low)
-                    // Lower score is better
+                    // Calculate score
                     float distanceScore = distance;
                     float visibilityScore = visibility * searchRadius; // Normalize to similar scale
                     float combinedScore = (1f - visibilityWeight) * distanceScore + visibilityWeight * visibilityScore;

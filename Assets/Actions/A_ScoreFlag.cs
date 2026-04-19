@@ -12,9 +12,11 @@ namespace UtilityAI
 
         public override void Execute(Context context)
         {
+            // find where the enemies goal is
             var enemyGoal = GameObject.Find("EnemyGoal");
             if (enemyGoal != null)
             {
+                // set the enemies target as the enemies goal
                 context.setTarget(enemyGoal.transform);
             }
         }

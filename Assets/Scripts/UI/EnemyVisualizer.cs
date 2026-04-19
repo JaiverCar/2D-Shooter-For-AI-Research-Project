@@ -1,7 +1,13 @@
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UtilityAI;
+
+/**************************
+ * Note: this file was entirely written by copilot
+ * Prompt: write a file to visualize current enemy
+ * assignments from the hive mind and if they are
+ * connected or not
+ **************************/
 
 public class EnemyVisualizer : MonoBehaviour
 {

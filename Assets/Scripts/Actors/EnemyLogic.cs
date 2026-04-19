@@ -10,7 +10,6 @@ Description:
 
 *******************************************************************************/
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UtilityAI;
@@ -82,7 +81,6 @@ public class EnemyLogic : MonoBehaviour
     public bool Aggroed = false;
 
     //Timers
-    private float Timer = 0.0f;
     private float MoveVerticalTimer = 0.0f; //Keeps enemies from jittering against walls
     private float MoveHorizontalTimer = 0.0f; //Keeps enemies from jittering against walls
 
@@ -125,9 +123,6 @@ public class EnemyLogic : MonoBehaviour
     bool advancedThisFrame = false;
 
     // Start is called before the first frame update
-
-    Vector2 lastTarget;
-    Vector2 lastTargetPos;
     Vector2 lastMoveDirection = Vector2.zero;
     float directionBlendSpeed = 10.0f; // How fast to blend between old and new direction
     float repathTimer = 0.0f;
@@ -220,8 +215,6 @@ public class EnemyLogic : MonoBehaviour
             // Pathfinding logic - check if we need to repath (AI HELPED HERE)
             repathTimer += Time.deltaTime;
 
-            bool targetMoved = AstarTarget != null && Vector2.Distance(AstarTarget, lastTargetPos) > 1.0f;
-
             // Check if we've reached the current waypoint (or path is invalid)
             bool atWaypoint = path == null || waypointIndex >= path.Count ||
                               Vector2.Distance(transform.position, path[waypointIndex]) < 0.05f;
@@ -229,7 +222,7 @@ public class EnemyLogic : MonoBehaviour
             // Check if we're at the end of the path completely
             bool atEndOfPath = path != null && waypointIndex >= path.Count;
 
-            // START AI HELP
+            // START COPILOT HELP
 
             // Repath if:
             // - Target changed (immediate aggro response)
@@ -277,7 +270,7 @@ public class EnemyLogic : MonoBehaviour
                 }
             }
 
-            // END AI HELP
+            // END COPILOT HELP
         }
 
 
@@ -481,6 +474,13 @@ public class EnemyLogic : MonoBehaviour
         //These delays on checking prevent the enemy from jittering back and forth on a wall
     }
 
+    public void ResetAstar()
+    {
+        path = null;
+        currentGridNode = null;
+        lastPathNode = null;
+    }
+
     //Check to see if we are hit by a bullet
     private void OnTriggerEnter2D(Collider2D col)
     {
@@ -492,12 +492,24 @@ public class EnemyLogic : MonoBehaviour
             GetComponent<EnemyLogic>().SetAggroState(true); //Aggro when hit
             if (Health <= 0) //We're dead, so destroy ourself
             {
-                //fire an event when an enemy dies:
-                OnEnemyDied?.Invoke(this);
+                var enemyGoal = GameObject.Find("EnemyGoal");
+                if (enemyGoal != null)
+                {
+                    if (UnityEngine.Random.Range(0.0f, 1.0f) <= DropChance)
+                        Instantiate(PCGObject.Prefabs["heart"], transform.position, Quaternion.identity);
 
-                if (UnityEngine.Random.Range(0.0f, 1.0f) <= DropChance)
-                    Instantiate(PCGObject.Prefabs["heart"], transform.position, Quaternion.identity);
-                Destroy(gameObject);
+                    Health = StartingHealth;
+                    transform.position = enemyGoal.transform.position;
+                    ResetAstar();
+
+                    HiveMind.Instance.SwitchSquad(thisBrain, HiveMind.squads.s_Scouts);
+                }
+                else
+                {
+                    //fire an event when an enemy dies:
+                    OnEnemyDied?.Invoke(this);
+                    Destroy(gameObject);
+                }
             }
         }
         //Aggro but no damage on friendly fire

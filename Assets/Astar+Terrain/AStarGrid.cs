@@ -1,10 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
 public class Node
 {
@@ -95,6 +91,9 @@ public class Node
     }
 }
 
+// Note: almost everything from here down was written by copilot
+// we felt it would not be a good use of our time to setup the grid system by hand
+// that being said, GetNeighbors was written by us 
 public class AStarGrid : MonoBehaviour
 {
     public static AStarGrid Instance;
