@@ -125,7 +125,7 @@ namespace UtilityAI
                     }
                     default:
                     {
-                        newColor = new Color(192, 192, 192);
+                        newColor = new Color(192f/255f, 192f/255f, 192f/255f);
                         break;
                     }
                 }

@@ -450,6 +450,7 @@ public class EnemyLogic : MonoBehaviour
                     {
                         HiveMind.Instance.globalSignalStrength = 1.0f;
                     }
+                    GetComponent<SpriteRenderer>().color = new Color(255f / 255f, 109f / 255f, 13f / 255f);
                 }
             }
         }
@@ -545,7 +546,12 @@ public class EnemyLogic : MonoBehaviour
                 if (isHiveNode)
                 {
                     HiveMind.Instance.globalSignalStrength -= 0.50f;
+                    if(HiveMind.Instance.globalSignalStrength < 0.0f)
+                    {
+                        HiveMind.Instance.globalSignalStrength = 0.0f;
+                    }
                     damageLock = true;
+                    GetComponent<SpriteRenderer>().color = Color.gray;
                     return;
                 }
                 var enemyGoal = GameObject.Find("EnemyGoal");
@@ -555,6 +561,7 @@ public class EnemyLogic : MonoBehaviour
                         Instantiate(PCGObject.Prefabs["heart"], transform.position, Quaternion.identity);
 
                     Health = StartingHealth;
+                    OnEnemyDied?.Invoke(this);
                     transform.position = enemyGoal.transform.position;
                     ResetAstar();
 
