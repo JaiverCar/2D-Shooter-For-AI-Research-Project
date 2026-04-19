@@ -140,6 +140,10 @@ public class EnemyLogic : MonoBehaviour
 
     public static event Action<EnemyLogic> OnEnemyDied;
 
+    private static float hiveNodeMaxTime = 15.0f;
+    private float hiveNodeTimer = hiveNodeMaxTime;
+    private bool damageLock = false;
+
     void Start()
     {
         //Initialize enemy health and health bar
@@ -432,6 +436,22 @@ public class EnemyLogic : MonoBehaviour
                     advancedThisFrame = true;
                 }
             }
+
+            if(isHiveNode && damageLock)
+            {
+                hiveNodeTimer -= Time.deltaTime;
+                if(hiveNodeTimer <= 0.0f)
+                {
+                    hiveNodeTimer = hiveNodeMaxTime;
+                    damageLock = false;
+                    Health = StartingHealth;
+                    HiveMind.Instance.globalSignalStrength += 0.50f;
+                    if(HiveMind.Instance.globalSignalStrength > 1.0f)
+                    {
+                        HiveMind.Instance.globalSignalStrength = 1.0f;
+                    }
+                }
+            }
         }
     }
 
@@ -515,10 +535,19 @@ public class EnemyLogic : MonoBehaviour
         //Check for an enemy bullet
         if (bullet != null && bullet.Team == Teams.Player)
         {
-            Health -= 1;
+            if (!damageLock)
+            {
+                Health -= 1;
+            }
             GetComponent<EnemyLogic>().SetAggroState(true); //Aggro when hit
             if (Health <= 0) //We're dead, so destroy ourself
             {
+                if (isHiveNode)
+                {
+                    HiveMind.Instance.globalSignalStrength -= 0.50f;
+                    damageLock = true;
+                    return;
+                }
                 var enemyGoal = GameObject.Find("EnemyGoal");
                 if (enemyGoal != null)
                 {
