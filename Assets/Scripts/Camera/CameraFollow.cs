@@ -11,6 +11,7 @@ Description:
 
 *******************************************************************************/
 
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -43,6 +44,16 @@ public class CameraFollow : MonoBehaviour
     private float SpeedLimit = 0.0f;
 
     private bool SpectatePlayer = false;
+
+    // for debug draw
+    private static List<(Vector3 position, Vector3 size, Color color)> _cubes = new();
+    private Material _mat;
+
+    private void Awake()
+    {
+        _mat = new Material(Shader.Find("Sprites/Default"));
+        _mat.renderQueue = 9990;
+    }
 
     //Fixed update should always be used for smoother camera movement
     void FixedUpdate()
@@ -161,5 +172,35 @@ public class CameraFollow : MonoBehaviour
     public bool GetCameraSpectatePlayer()
     {
         return SpectatePlayer;
+    }
+
+
+
+    public void DrawCube(Vector3 position, Vector3 size, Color color)
+    {
+        _cubes.Add((position, size, color));
+    }
+
+    void OnPostRender()
+    {
+        if (_cubes.Count == 0) return;
+
+        _mat.SetPass(0);
+        GL.Begin(GL.QUADS);
+
+        foreach (var (position, size, color) in _cubes)
+        {
+            float halfX = size.x / 2f;
+            float halfY = size.y / 2f;
+
+            GL.Color(color);
+            GL.Vertex(position + new Vector3(-halfX, -halfY, 0)); // bottom left
+            GL.Vertex(position + new Vector3(halfX, -halfY, 0)); // bottom right
+            GL.Vertex(position + new Vector3(halfX, halfY, 0)); // top right
+            GL.Vertex(position + new Vector3(-halfX, halfY, 0)); // top left
+        }
+
+        GL.End();
+        _cubes.Clear();
     }
 }

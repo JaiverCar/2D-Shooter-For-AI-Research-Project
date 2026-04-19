@@ -201,6 +201,8 @@ public class TerrainAnalysis : MonoBehaviour
 
     void Update()
     {
+        DrawSquares();
+
         // Keyboard shortcuts to toggle layer types
         if (Input.GetKeyDown(KeyCode.V))
         {
@@ -411,7 +413,7 @@ public class TerrainAnalysis : MonoBehaviour
         Debug.Log($"{layer.layerName}: {(layer.enabled ? "ON" : "OFF")}");
     }
 
-    void OnDrawGizmos()
+    void DrawSquares()
     {
         if (!showVisualization)
             return;
@@ -459,7 +461,13 @@ public class TerrainAnalysis : MonoBehaviour
 
                     finalColor.a = Mathf.Clamp01(finalColor.a);
                     Gizmos.color = finalColor;
-                    Gizmos.DrawCube(node.worldPosition, Vector3.one * nodeSize);
+
+                    var camera = FindObjectOfType<CameraFollow>();
+
+                    if (camera != null)
+                    {
+                        camera.DrawCube(node.worldPosition, Vector3.one * nodeSize, finalColor);
+                    }
                 }
             }
         }

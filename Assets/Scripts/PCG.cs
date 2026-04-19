@@ -76,12 +76,6 @@ public class PCG : MonoBehaviour
             return;
         }
 
-        //R to reset the level
-        if (Input.GetKey(KeyCode.R))
-        {
-            ResetLevel();
-            return;
-        }
     }
 
     //Generate an actual level to play
