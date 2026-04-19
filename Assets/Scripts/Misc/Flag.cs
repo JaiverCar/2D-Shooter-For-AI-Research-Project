@@ -10,6 +10,8 @@ public class Flag : MonoBehaviour
     private PlayerLogic pHolder;
     private EnemyLogic eHolder;
 
+    private bool canBePickedUp = true;
+
     [SerializeField]
     public bool isEnemyFlag;
 
@@ -65,6 +67,7 @@ public class Flag : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         //GameManager.Instance.ourFlag = this.transform;
 
         // if the player is holding us
@@ -82,6 +85,8 @@ public class Flag : MonoBehaviour
 
                 // enable our collider component
                 GetComponent<CircleCollider2D>().enabled = true;
+
+                canBePickedUp = false;
             }
         }
 
@@ -101,13 +106,17 @@ public class Flag : MonoBehaviour
         // if we collided with the player
         if (player != null)
         {
-            // save a ref the player as our holder
-            pHolder = player;
+            // check if we're allowed to pick it up 
+            if (canBePickedUp == true)
+            {
+                // save a ref the player as our holder
+                pHolder = player;
 
-            // disable our collider component
-            GetComponent<CircleCollider2D>().enabled = false;
-            
-            return;
+                // disable our collider component
+                GetComponent<CircleCollider2D>().enabled = false;
+
+                return;
+            }
         }
 
         //Check for collision against an enemy
@@ -120,11 +129,23 @@ public class Flag : MonoBehaviour
             eHolder = enemy;
 
             enemy.hasFlag = true;
-            
+
             // disable our collider component
             GetComponent<CircleCollider2D>().enabled = false;
-            
+
             return;
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        //Check for collision against the player
+        var player = other.GetComponent<PlayerLogic>();
+
+        // if we collided with the player
+        if (player != null && canBePickedUp == false)
+        {
+            canBePickedUp = true;
         }
     }
 }
