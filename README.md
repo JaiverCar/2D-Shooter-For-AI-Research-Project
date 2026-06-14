@@ -1,4 +1,4 @@
-This was a final project for our 'AI For Games' class at DigiPen Institute of Technology.
+This was a final project for our (Javier Carballo Flor and James Hardy) 'AI For Games' class at DigiPen Institute of Technology.
 
 To open it, you just need to unzip it and open the project in Unity!
 
